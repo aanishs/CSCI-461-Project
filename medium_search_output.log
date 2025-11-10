@@ -1,0 +1,433 @@
+================================================================================
+HYPERPARAMETER SEARCH - TIC EPISODE PREDICTION
+================================================================================
+
+Mode: medium
+Data: results (2).csv
+Experiments: experiments
+
+Loading data...
+Loaded 1445 episodes from 43 users
+Search Configuration:
+  Data configurations: 6
+  Models: 3 (random_forest, xgboost, lightgbm)
+  Targets: 4
+  Total experiments: 72
+  Search type: random
+  Iterations per experiment: 50
+
+Overall Progress:   0%|          | 0/72 [00:00<?, ?it/s]
+Preparing data: threshold=7, n_lags=3, windows=[7], feature_set=sequence_only
+Creating features...
+Creating targets...
+Prepared 1445 samples with 22 features
+
+[1/72] Model: random_forest, Target: target_next_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+Overall Progress:   1%|▏         | 1/72 [00:17<20:17, 17.15s/it]Overall Progress:   3%|▎         | 2/72 [00:31<17:59, 15.42s/it]Overall Progress:   4%|▍         | 3/72 [00:43<15:48, 13.75s/it]Overall Progress:   6%|▌         | 4/72 [00:56<15:17, 13.49s/it]Overall Progress:   7%|▋         | 5/72 [01:00<11:11, 10.02s/it]Overall Progress:   8%|▊         | 6/72 [01:02<08:12,  7.46s/it]Overall Progress:  10%|▉         | 7/72 [01:05<06:35,  6.08s/it]Overall Progress:  11%|█         | 8/72 [01:10<06:04,  5.69s/it]Overall Progress:  12%|█▎        | 9/72 [02:57<39:17, 37.43s/it]Overall Progress:  14%|█▍        | 10/72 [05:25<1:13:42, 71.33s/it]Overall Progress:  15%|█▌        | 11/72 [11:31<2:44:12, 161.51s/it]Overall Progress:  17%|█▋        | 12/72 [13:07<2:21:39, 141.66s/it]Overall Progress:  18%|█▊        | 13/72 [13:21<1:41:20, 103.06s/it]Overall Progress:  19%|█▉        | 14/72 [13:35<1:13:32, 76.07s/it] Overall Progress:  21%|██        | 15/72 [13:45<53:32, 56.36s/it]  Overall Progress:  22%|██▏       | 16/72 [13:59<40:38, 43.54s/it]Overall Progress:  24%|██▎       | 17/72 [14:04<29:07, 31.77s/it]Overall Progress:  25%|██▌       | 18/72 [14:06<20:34, 22.86s/it]Overall Progress:  26%|██▋       | 19/72 [14:10<15:13, 17.24s/it]Overall Progress:  28%|██▊       | 20/72 [14:14<11:37, 13.42s/it]Overall Progress:  29%|██▉       | 21/72 [16:12<37:58, 44.68s/it]Overall Progress:  31%|███       | 22/72 [18:45<1:04:24, 77.30s/it]Overall Progress:  32%|███▏      | 23/72 [20:33<1:10:32, 86.38s/it]Overall Progress:  33%|███▎      | 24/72 [22:12<1:12:02, 90.05s/it]Overall Progress:  35%|███▍      | 25/72 [22:31<53:50, 68.74s/it]  Overall Progress:  36%|███▌      | 26/72 [22:49<41:02, 53.53s/it]Overall Progress:  38%|███▊      | 27/72 [23:03<31:19, 41.76s/it]Overall Progress:  39%|███▉      | 28/72 [23:20<25:14, 34.42s/it]Overall Progress:  40%|████      | 29/72 [23:26<18:26, 25.74s/it]Overall Progress:  42%|████▏     | 30/72 [23:28<13:10, 18.81s/it]Overall Progress:  43%|████▎     | 31/72 [23:35<10:25, 15.26s/it]Overall Progress:  44%|████▍     | 32/72 [23:41<08:13, 12.34s/it]Overall Progress:  46%|████▌     | 33/72 [25:25<25:55, 39.89s/it]Overall Progress:  47%|████▋     | 34/72 [27:43<43:50, 69.21s/it]Overall Progress:  49%|████▊     | 35/72 [29:28<49:20, 80.03s/it]Overall Progress:  50%|█████     | 36/72 [31:04<50:49, 84.71s/it]Overall Progress:  51%|█████▏    | 37/72 [31:16<36:46, 63.03s/it]Overall Progress:  53%|█████▎    | 38/72 [31:28<27:05, 47.81s/it]Overall Progress:  54%|█████▍    | 39/72 [31:39<20:06, 36.56s/it]Overall Progress:  56%|█████▌    | 40/72 [31:50<15:26, 28.94s/it]Overall Progress:  57%|█████▋    | 41/72 [31:53<10:58, 21.25s/it]Overall Progress:  58%|█████▊    | 42/72 [31:55<07:41, 15.40s/it]Overall Progress:  60%|█████▉    | 43/72 [31:58<05:38, 11.67s/it]Overall Progress:  61%|██████    | 44/72 [32:01<04:15,  9.14s/it]Overall Progress:  62%|██████▎   | 45/72 [33:37<15:46, 35.06s/it]Overall Progress:  64%|██████▍   | 46/72 [35:14<23:17, 53.74s/it]Overall Progress:  65%|██████▌   | 47/72 [48:13<1:53:06, 271.45s/it]Overall Progress:  67%|██████▋   | 48/72 [1:04:23<3:12:21, 480.91s/it]Overall Progress:  68%|██████▊   | 49/72 [1:07:50<2:32:49, 398.68s/it]Overall Progress:  69%|██████▉   | 50/72 [1:08:10<1:44:31, 285.06s/it]Overall Progress:  71%|███████   | 51/72 [1:08:27<1:11:37, 204.63s/it]Overall Progress:  72%|███████▏  | 52/72 [1:12:11<1:10:13, 210.67s/it]Overall Progress:  74%|███████▎  | 53/72 [1:12:21<47:35, 150.27s/it]  Overall Progress:  75%|███████▌  | 54/72 [1:14:10<41:23, 137.97s/it]Overall Progress:  76%|███████▋  | 55/72 [1:14:22<28:24, 100.29s/it]Overall Progress:  78%|███████▊  | 56/72 [1:14:30<19:21, 72.59s/it] Overall Progress:  79%|███████▉  | 57/72 [1:16:29<21:35, 86.35s/it]Overall Progress:  81%|████████  | 58/72 [1:18:30<22:36, 96.87s/it]Overall Progress:  82%|████████▏ | 59/72 [1:20:50<23:47, 109.80s/it]Overall Progress:  83%|████████▎ | 60/72 [1:22:49<22:30, 112.55s/it]Overall Progress:  85%|████████▍ | 61/72 [1:23:16<15:53, 86.67s/it] Overall Progress:  86%|████████▌ | 62/72 [1:23:44<11:32, 69.22s/it]Overall Progress:  88%|████████▊ | 63/72 [1:24:06<08:16, 55.17s/it]Overall Progress:  89%|████████▉ | 64/72 [1:24:33<06:12, 46.55s/it]Overall Progress:  90%|█████████ | 65/72 [1:24:42<04:08, 35.45s/it]Overall Progress:  92%|█████████▏| 66/72 [1:24:47<02:36, 26.11s/it]Overall Progress:  93%|█████████▎| 67/72 [1:24:57<01:46, 21.27s/it]Overall Progress:  94%|█████████▍| 68/72 [1:25:06<01:11, 17.77s/it]Overall Progress:  96%|█████████▌| 69/72 [1:27:24<02:41, 53.73s/it]Overall Progress:  97%|█████████▋| 70/72 [1:29:21<02:25, 72.71s/it]Overall Progress:  99%|█████████▊| 71/72 [1:31:08<01:22, 82.96s/it]Overall Progress: 100%|██████████| 72/72 [1:33:01<00:00, 91.99s/it]Overall Progress: 100%|██████████| 72/72 [1:33:01<00:00, 77.52s/it]
+  Test MAE: 2.0302
+
+[2/72] Model: random_forest, Target: target_next_high_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test F1: 0.1897
+
+[3/72] Model: random_forest, Target: target_high_count_next_7d
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 6.5034
+
+[4/72] Model: random_forest, Target: target_time_to_high_days
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 9.0158
+
+[5/72] Model: xgboost, Target: target_next_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 2.0157
+
+[6/72] Model: xgboost, Target: target_next_high_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test F1: 0.4265
+
+[7/72] Model: xgboost, Target: target_high_count_next_7d
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 6.6588
+
+[8/72] Model: xgboost, Target: target_time_to_high_days
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 6.9401
+
+[9/72] Model: lightgbm, Target: target_next_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 2.0505
+
+[10/72] Model: lightgbm, Target: target_next_high_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test F1: 0.4444
+
+[11/72] Model: lightgbm, Target: target_high_count_next_7d
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 6.4453
+
+[12/72] Model: lightgbm, Target: target_time_to_high_days
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 8.8877
+
+Preparing data: threshold=7, n_lags=3, windows=[7], feature_set=time_window_only
+Creating features...
+Creating targets...
+Prepared 1445 samples with 27 features
+
+[13/72] Model: random_forest, Target: target_next_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 1.9911
+
+[14/72] Model: random_forest, Target: target_next_high_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test F1: 0.4354
+
+[15/72] Model: random_forest, Target: target_high_count_next_7d
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 5.9597
+
+[16/72] Model: random_forest, Target: target_time_to_high_days
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 8.4920
+
+[17/72] Model: xgboost, Target: target_next_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 2.0170
+
+[18/72] Model: xgboost, Target: target_next_high_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test F1: 0.2810
+
+[19/72] Model: xgboost, Target: target_high_count_next_7d
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 6.5490
+
+[20/72] Model: xgboost, Target: target_time_to_high_days
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 12.1824
+
+[21/72] Model: lightgbm, Target: target_next_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 2.0079
+
+[22/72] Model: lightgbm, Target: target_next_high_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test F1: 0.3308
+
+[23/72] Model: lightgbm, Target: target_high_count_next_7d
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 6.0498
+
+[24/72] Model: lightgbm, Target: target_time_to_high_days
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 7.4046
+
+Preparing data: threshold=7, n_lags=3, windows=[7], feature_set=all
+Creating features...
+Creating targets...
+Prepared 1445 samples with 34 features
+
+[25/72] Model: random_forest, Target: target_next_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 1.9898
+
+[26/72] Model: random_forest, Target: target_next_high_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test F1: 0.3459
+
+[27/72] Model: random_forest, Target: target_high_count_next_7d
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 5.8648
+
+[28/72] Model: random_forest, Target: target_time_to_high_days
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 10.3229
+
+[29/72] Model: xgboost, Target: target_next_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 1.9673
+
+[30/72] Model: xgboost, Target: target_next_high_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test F1: 0.2903
+
+[31/72] Model: xgboost, Target: target_high_count_next_7d
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 5.9932
+
+[32/72] Model: xgboost, Target: target_time_to_high_days
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 10.9793
+
+[33/72] Model: lightgbm, Target: target_next_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 1.9962
+
+[34/72] Model: lightgbm, Target: target_next_high_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test F1: 0.2435
+
+[35/72] Model: lightgbm, Target: target_high_count_next_7d
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 5.8763
+
+[36/72] Model: lightgbm, Target: target_time_to_high_days
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 8.1044
+
+Preparing data: threshold=7, n_lags=3, windows=[3, 7, 14], feature_set=sequence_only
+Creating features...
+Creating targets...
+Prepared 1445 samples with 22 features
+
+[37/72] Model: random_forest, Target: target_next_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 2.0302
+
+[38/72] Model: random_forest, Target: target_next_high_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test F1: 0.1897
+
+[39/72] Model: random_forest, Target: target_high_count_next_7d
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 6.5034
+
+[40/72] Model: random_forest, Target: target_time_to_high_days
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 9.0158
+
+[41/72] Model: xgboost, Target: target_next_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 2.0157
+
+[42/72] Model: xgboost, Target: target_next_high_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test F1: 0.4265
+
+[43/72] Model: xgboost, Target: target_high_count_next_7d
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 6.6588
+
+[44/72] Model: xgboost, Target: target_time_to_high_days
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 6.9401
+
+[45/72] Model: lightgbm, Target: target_next_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 2.0505
+
+[46/72] Model: lightgbm, Target: target_next_high_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test F1: 0.4444
+
+[47/72] Model: lightgbm, Target: target_high_count_next_7d
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 6.4453
+
+[48/72] Model: lightgbm, Target: target_time_to_high_days
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 8.8877
+
+Preparing data: threshold=7, n_lags=3, windows=[3, 7, 14], feature_set=time_window_only
+Creating features...
+Creating targets...
+Prepared 1445 samples with 45 features
+
+[49/72] Model: random_forest, Target: target_next_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 1.9827
+
+[50/72] Model: random_forest, Target: target_next_high_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test F1: 0.3529
+
+[51/72] Model: random_forest, Target: target_high_count_next_7d
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 5.5954
+
+[52/72] Model: random_forest, Target: target_time_to_high_days
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 7.6451
+
+[53/72] Model: xgboost, Target: target_next_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 2.1764
+
+[54/72] Model: xgboost, Target: target_next_high_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test F1: 0.3333
+
+[55/72] Model: xgboost, Target: target_high_count_next_7d
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 6.1645
+
+[56/72] Model: xgboost, Target: target_time_to_high_days
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 7.9502
+
+[57/72] Model: lightgbm, Target: target_next_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 2.0498
+
+[58/72] Model: lightgbm, Target: target_next_high_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test F1: 0.3731
+
+[59/72] Model: lightgbm, Target: target_high_count_next_7d
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 6.2631
+
+[60/72] Model: lightgbm, Target: target_time_to_high_days
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 11.8212
+
+Preparing data: threshold=7, n_lags=3, windows=[3, 7, 14], feature_set=all
+Creating features...
+Creating targets...
+Prepared 1445 samples with 52 features
+
+[61/72] Model: random_forest, Target: target_next_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 1.9552
+
+[62/72] Model: random_forest, Target: target_next_high_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test F1: 0.2645
+
+[63/72] Model: random_forest, Target: target_high_count_next_7d
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 5.9728
+
+[64/72] Model: random_forest, Target: target_time_to_high_days
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 7.7169
+
+[65/72] Model: xgboost, Target: target_next_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 1.9536
+
+[66/72] Model: xgboost, Target: target_next_high_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test F1: 0.2459
+
+[67/72] Model: xgboost, Target: target_high_count_next_7d
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 6.2773
+
+[68/72] Model: xgboost, Target: target_time_to_high_days
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 8.1555
+
+[69/72] Model: lightgbm, Target: target_next_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 2.0925
+
+[70/72] Model: lightgbm, Target: target_next_high_intensity
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test F1: 0.2439
+
+[71/72] Model: lightgbm, Target: target_high_count_next_7d
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 6.3207
+
+[72/72] Model: lightgbm, Target: target_time_to_high_days
+  Running RandomizedSearchCV with 50 iterations, 3 folds...
+  Test MAE: 7.1779
+
+================================================================================
+SEARCH COMPLETE
+================================================================================
+============================================================
+EXPERIMENT SUMMARY
+============================================================
+
+Total Experiments: 76
+Models Tested: 3
+Target Types Tested: 4
+
+Model Distribution:
+  random_forest: 26
+  xgboost: 26
+  lightgbm: 24
+
+Target Type Distribution:
+  target_next_intensity: 20
+  target_next_high_intensity: 20
+  target_high_count_next_7d: 18
+  target_time_to_high_days: 18
+
+Best Scores:
+  train_mae: 0.0011 (run: xgboost_target_time_to_high_days_20251109_193853)
+  train_rmse: 0.0015 (run: xgboost_target_time_to_high_days_20251109_193853)
+  train_mse: 0.0000 (run: xgboost_target_time_to_high_days_20251109_193853)
+  train_r2: 1.0000 (run: xgboost_target_time_to_high_days_20251109_193853)
+  train_mean_error: -0.0512 (run: xgboost_target_time_to_high_days_20251109_181457)
+  train_median_abs_error: 0.0007 (run: xgboost_target_time_to_high_days_20251109_193853)
+  train_max_error: 0.0071 (run: xgboost_target_time_to_high_days_20251109_192817)
+  train_mape: 13.6415 (run: lightgbm_target_next_intensity_20251109_193016)
+  test_mae: 1.9377 (run: random_forest_target_next_intensity_20251108_232803)
+  test_rmse: 2.3772 (run: random_forest_target_next_intensity_20251108_232803)
+  test_mse: 5.6510 (run: random_forest_target_next_intensity_20251108_232803)
+  test_r2: 0.1833 (run: random_forest_target_next_intensity_20251108_232803)
+  test_mean_error: -4.7037 (run: lightgbm_target_high_count_next_7d_20251109_194455)
+  test_median_abs_error: 1.6172 (run: lightgbm_target_next_intensity_20251109_182959)
+  test_max_error: 5.4731 (run: xgboost_target_next_intensity_20251109_181446)
+  test_mape: 39.0038 (run: random_forest_target_next_intensity_20251108_232803)
+  test_baseline_mae: 2.6839 (run: random_forest_target_next_intensity_20251108_232803)
+  test_baseline_rmse: 3.2240 (run: random_forest_target_next_intensity_20251108_232803)
+  test_mae_improvement: -56.5926 (run: xgboost_target_time_to_high_days_20251109_182801)
+  test_rmse_improvement: -20.7688 (run: xgboost_target_time_to_high_days_20251109_182801)
+  train_time_seconds: 0.0435 (run: random_forest_target_high_count_next_7d_20251109_182732)
+  train_accuracy: 1.0000 (run: lightgbm_target_next_high_intensity_20251109_193217)
+  train_precision: 1.0000 (run: random_forest_target_next_high_intensity_20251108_232809)
+  train_recall: 1.0000 (run: lightgbm_target_next_high_intensity_20251109_193217)
+  train_f1: 1.0000 (run: lightgbm_target_next_high_intensity_20251109_193217)
+  train_true_positives: 72.0000 (run: lightgbm_target_next_high_intensity_20251109_184129)
+  train_true_negatives: 1021.0000 (run: xgboost_target_next_high_intensity_20251109_183715)
+  train_false_positives: 0.0000 (run: random_forest_target_next_high_intensity_20251108_232809)
+  train_false_negatives: 0.0000 (run: lightgbm_target_next_high_intensity_20251109_193217)
+  train_specificity: 0.9846 (run: xgboost_target_next_high_intensity_20251109_183715)
+  train_baseline_accuracy: 0.8390 (run: random_forest_target_next_high_intensity_20251108_232809)
+  train_accuracy_improvement: 19.1900 (run: lightgbm_target_next_high_intensity_20251109_193217)
+  test_accuracy: 0.6268 (run: xgboost_target_next_high_intensity_20251109_181449)
+  test_precision: 0.9333 (run: lightgbm_target_next_high_intensity_20251109_184129)
+  test_recall: 0.3200 (run: lightgbm_target_next_high_intensity_20251109_181911)
+  test_f1: 0.4444 (run: lightgbm_target_next_high_intensity_20251109_181911)
+  test_true_positives: 11.0000 (run: random_forest_target_next_high_intensity_20251109_181418)
+  test_true_negatives: 94.0000 (run: random_forest_target_next_high_intensity_20251109_182722)
+  test_false_positives: 1.0000 (run: lightgbm_target_next_high_intensity_20251109_184129)
+  test_false_negatives: 68.0000 (run: lightgbm_target_next_high_intensity_20251109_181911)
+  test_specificity: 0.8624 (run: random_forest_target_next_high_intensity_20251109_182722)
+  test_roc_auc: 0.8071 (run: xgboost_target_next_high_intensity_20251109_181449)
+  test_pr_auc: 0.7703 (run: xgboost_target_next_high_intensity_20251109_181449)
+  test_baseline_accuracy: 0.5215 (run: random_forest_target_next_high_intensity_20251108_232809)
+  test_accuracy_improvement: 20.1835 (run: xgboost_target_next_high_intensity_20251109_181449)
+
+================================================================================
+TOP RESULTS
+================================================================================
+
+Top 5 Regression Models (by Test MAE):
+                                               run_id  ... metric_test_rmse
+0   random_forest_target_next_intensity_20251108_2...  ...         2.377179
+68      xgboost_target_next_intensity_20251109_193829  ...         2.438578
+64  random_forest_target_next_intensity_20251109_1...  ...         2.407211
+2       xgboost_target_next_intensity_20251108_232811  ...         2.429649
+32      xgboost_target_next_intensity_20251109_183712  ...         2.429649
+
+[5 rows x 5 columns]
+
+Top 5 Classification Models (by Test F1):
+                                               run_id  ... metric_test_pr_auc
+13  lightgbm_target_next_high_intensity_20251109_1...  ...           0.692247
+49  lightgbm_target_next_high_intensity_20251109_1...  ...           0.692247
+17  random_forest_target_next_high_intensity_20251...  ...           0.666118
+9   xgboost_target_next_high_intensity_20251109_18...  ...           0.770335
+45  xgboost_target_next_high_intensity_20251109_18...  ...           0.770335
+
+[5 rows x 5 columns]
+
+Results saved to: experiments/results.csv
+Detailed logs in: experiments/details/
