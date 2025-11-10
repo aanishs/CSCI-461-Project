@@ -662,7 +662,7 @@ We tracked comprehensive metrics for both regression and classification tasks:
 
 ### 6.4 Feature Importance (Inferred)
 
-Based on model architecture and domain knowledge, likely most important features:
+Based on model architecture and domain knowledge, these are the likely most important features:
 
 **Top Predictive Features (Expected):**
 1. `prev_intensity_1/2/3`: Immediate history strongest predictor
@@ -956,7 +956,7 @@ CSCI-461-Project/
 
 ### Appendix E: Reproducibility
 
-All results reproducible with:
+All results reproducible on our repository  with:
 ```bash
 python run_hyperparameter_search.py --mode quick
 ```
