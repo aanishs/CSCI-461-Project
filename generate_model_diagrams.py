@@ -34,8 +34,8 @@ results = pd.read_csv('experiments/results.csv')
 # Figure 13: Prediction Framework Pipeline
 # ============================================================================
 print("\n[13/18] Prediction framework pipeline...")
-fig, ax = plt.subplots(figsize=(14, 8))
-ax.set_xlim(0, 10)
+fig, ax = plt.subplots(figsize=(16, 9))
+ax.set_xlim(0, 12)  # give extra horizontal breathing room
 ax.set_ylim(0, 10)
 ax.axis('off')
 
@@ -46,8 +46,8 @@ color_model = '#E8F5E9'
 color_pred = '#F3E5F5'
 
 # Box parameters
-box_width = 1.8
-box_height = 0.8
+box_width = 2.2
+box_height = 1.0
 arrow_props = dict(arrowstyle='->', lw=2, color='black')
 
 # Stage 1: Raw Data
@@ -66,19 +66,19 @@ ax.annotate('', xy=(0.5 + box_width/2, y_pos - 0.3),
 
 # Stage 2: Feature Engineering
 y_pos = 6.5
-rect2 = FancyBboxPatch((0.2, y_pos), 2.4, 1.2,
+rect2 = FancyBboxPatch((0.2, y_pos), 3.0, 1.6,
                        boxstyle="round,pad=0.1",
                        edgecolor='black', facecolor=color_feature, linewidth=2)
 ax.add_patch(rect2)
-ax.text(0.2 + 1.2, y_pos + 1.0, 'Feature Engineering',
+ax.text(0.2 + 1.5, y_pos + 1.3, 'Feature Engineering',
         ha='center', va='center', fontsize=12, fontweight='bold')
 feature_text = '• Temporal (6 features)\n• Sequence (9 features)\n• Time-Window (10 features)\n• User-Level (5 features)\n• Categorical (4 features)'
-ax.text(0.2 + 1.2, y_pos + 0.4, feature_text,
+ax.text(0.2 + 1.5, y_pos + 0.6, feature_text,
         ha='center', va='top', fontsize=9)
 
 # Arrow down
-ax.annotate('', xy=(1.4, y_pos - 0.3),
-            xytext=(1.4, y_pos),
+ax.annotate('', xy=(1.7, y_pos - 0.3),
+            xytext=(1.7, y_pos),
             arrowprops=arrow_props)
 
 # Stage 3: Train/Test Split
@@ -91,71 +91,70 @@ ax.text(0.5 + box_width/2, y_pos + box_height/2, 'User-Grouped Split\n80% Train 
         ha='center', va='center', fontsize=11, fontweight='bold')
 
 # Arrow splits to two models
-ax.annotate('', xy=(3.5, y_pos + box_height/2),
+ax.annotate('', xy=(3.8, y_pos + box_height/2),
             xytext=(0.5 + box_width, y_pos + box_height/2),
             arrowprops=arrow_props)
 
 # Stage 4a: Random Forest
 y_pos = 6.2
-rect4a = FancyBboxPatch((3.5, y_pos), 2.0, 1.5,
+rect4a = FancyBboxPatch((3.8, y_pos), 2.4, 1.7,
                         boxstyle="round,pad=0.1",
                         edgecolor='darkgreen', facecolor=color_model, linewidth=2.5)
 ax.add_patch(rect4a)
-ax.text(3.5 + 1.0, y_pos + 1.2, 'Random Forest',
+ax.text(3.8 + 1.2, y_pos + 1.35, 'Random Forest',
         ha='center', va='center', fontsize=12, fontweight='bold', color='darkgreen')
 rf_text = 'n_estimators=100\nmax_depth=5\n\nRegression Task\nPredict Next Intensity'
-ax.text(3.5 + 1.0, y_pos + 0.5, rf_text,
+ax.text(3.8 + 1.2, y_pos + 0.6, rf_text,
         ha='center', va='top', fontsize=9)
 
 # Stage 4b: XGBoost
 y_pos = 3.8
-rect4b = FancyBboxPatch((3.5, y_pos), 2.0, 1.5,
+rect4b = FancyBboxPatch((3.8, y_pos), 2.4, 1.7,
                         boxstyle="round,pad=0.1",
                         edgecolor='darkorange', facecolor=color_model, linewidth=2.5)
 ax.add_patch(rect4b)
-ax.text(3.5 + 1.0, y_pos + 1.2, 'XGBoost',
+ax.text(3.8 + 1.2, y_pos + 1.35, 'XGBoost',
         ha='center', va='center', fontsize=12, fontweight='bold', color='darkorange')
 xgb_text = 'n_estimators=100\nmax_depth=10\n\nClassification Task\nPredict High Intensity'
-ax.text(3.5 + 1.0, y_pos + 0.5, xgb_text,
+ax.text(3.8 + 1.2, y_pos + 0.6, xgb_text,
         ha='center', va='top', fontsize=9)
 
 # Arrows to predictions
-ax.annotate('', xy=(7.0, 6.2 + 0.75),
-            xytext=(5.5, 6.2 + 0.75),
+ax.annotate('', xy=(7.6, 6.2 + 0.85),
+            xytext=(6.2, 6.2 + 0.85),
             arrowprops=arrow_props)
-ax.annotate('', xy=(7.0, 3.8 + 0.75),
-            xytext=(5.5, 3.8 + 0.75),
+ax.annotate('', xy=(7.6, 3.8 + 0.85),
+            xytext=(6.2, 3.8 + 0.85),
             arrowprops=arrow_props)
 
 # Stage 5a: RF Predictions
 y_pos = 6.2
-rect5a = FancyBboxPatch((7.0, y_pos), box_width, 1.5,
+rect5a = FancyBboxPatch((7.6, y_pos), 2.4, 1.7,
                         boxstyle="round,pad=0.1",
                         edgecolor='black', facecolor=color_pred, linewidth=2)
 ax.add_patch(rect5a)
-ax.text(7.0 + box_width/2, y_pos + 1.2, 'Predictions',
+ax.text(7.6 + 1.2, y_pos + 1.35, 'Predictions',
         ha='center', va='center', fontsize=11, fontweight='bold')
 pred_text = 'MAE: 1.94\nRMSE: 2.38\nR²: 0.183\n27.8% improvement'
-ax.text(7.0 + box_width/2, y_pos + 0.5, pred_text,
+ax.text(7.6 + 1.2, y_pos + 0.6, pred_text,
         ha='center', va='top', fontsize=9)
 
 # Stage 5b: XGBoost Predictions
 y_pos = 3.8
-rect5b = FancyBboxPatch((7.0, y_pos), box_width, 1.5,
+rect5b = FancyBboxPatch((7.6, y_pos), 2.4, 1.7,
                         boxstyle="round,pad=0.1",
                         edgecolor='black', facecolor=color_pred, linewidth=2)
 ax.add_patch(rect5b)
-ax.text(7.0 + box_width/2, y_pos + 1.2, 'Predictions',
+ax.text(7.6 + 1.2, y_pos + 1.35, 'Predictions',
         ha='center', va='center', fontsize=11, fontweight='bold')
 pred_text = 'F1: 0.341\nPrecision: 0.657\nRecall: 0.230\nPR-AUC: 0.699'
-ax.text(7.0 + box_width/2, y_pos + 0.5, pred_text,
+ax.text(7.6 + 1.2, y_pos + 0.6, pred_text,
         ha='center', va='top', fontsize=9)
 
 # Title
-ax.text(5, 9.5, 'Tic Episode Prediction Framework',
-        ha='center', va='center', fontsize=16, fontweight='bold')
+fig.suptitle('Tic Episode Prediction Framework', fontsize=16, fontweight='bold', y=0.98)
 
-plt.tight_layout()
+plt.tight_layout(rect=[0, 0, 1, 0.95])
 plt.savefig(output_dir / 'fig13_prediction_framework.png', dpi=300, bbox_inches='tight')
 plt.close()
 

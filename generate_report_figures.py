@@ -127,7 +127,7 @@ if len(reg_results) > 0:
     ax.set_ylabel('Test MAE', fontsize=12, fontweight='bold')
     ax.set_title('Regression Performance: Mean Absolute Error by Model', fontsize=14, fontweight='bold')
     ax.set_xticks(x)
-    ax.set_xticklabels([m.replace('_', ' ').title() for m in models])
+    ax.set_xticklabels([m.replace('_', ' ').title() for m in models], rotation=45, ha='right', fontsize=8)
     ax.legend()
     ax.grid(True, alpha=0.3, axis='y')
     plt.tight_layout()
@@ -157,7 +157,7 @@ if len(clf_results) > 0:
     ax.set_ylabel('Test F1-Score', fontsize=12, fontweight='bold')
     ax.set_title('Classification Performance: F1-Score by Model', fontsize=14, fontweight='bold')
     ax.set_xticks(x)
-    ax.set_xticklabels([m.replace('_', ' ').title() for m in models])
+    ax.set_xticklabels([m.replace('_', ' ').title() for m in models], rotation=45, ha='right', fontsize=8)
     ax.set_ylim(0, max(f1_values) * 1.2)
     ax.grid(True, alpha=0.3, axis='y')
     plt.tight_layout()
@@ -169,7 +169,7 @@ if len(clf_results) > 0:
 # ============================================================================
 print("[7/12] Multi-metric comparison - regression...")
 if len(reg_results) > 0:
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6), constrained_layout=False)
 
     metrics = ['metric_test_mae', 'metric_test_rmse', 'metric_test_r2']
     titles = ['Mean Absolute Error', 'Root Mean Squared Error', 'R² Score']
@@ -182,18 +182,30 @@ if len(reg_results) > 0:
 
         bars = ax.bar(x, values, color=colors[:len(models)], edgecolor='black', linewidth=1.5)
 
+        # Add labels with a small offset and ensure vertical margins to avoid overlap
         for bar, val in zip(bars, values):
             height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width()/2., height + (height * 0.02),
-                    f'{val:.3f}', ha='center', va='bottom', fontsize=9, fontweight='bold')
+            ax.annotate(f'{val:.3f}',
+                        xy=(bar.get_x() + bar.get_width() / 2.0, height),
+                        xytext=(0, 4),
+                        textcoords='offset points',
+                        ha='center',
+                        va='bottom',
+                        fontsize=8,
+                        fontweight='bold')
 
         ax.set_title(title, fontsize=11, fontweight='bold')
         ax.set_xticks(x)
-        ax.set_xticklabels([m.replace('_', ' ').title() for m in models], fontsize=9)
+        ax.set_xticklabels([m.replace('_', ' ').title() for m in models], rotation=30, ha='right', fontsize=9)
         ax.grid(True, alpha=0.3, axis='y')
+        # Add y-margins to provide headroom for labels
+        y_min, y_max = float(values.min()), float(values.max())
+        y_range = max(1e-6, y_max - y_min)
+        ax.set_ylim(y_min - 0.15 * y_range, y_max + 0.25 * y_range)
+        ax.margins(y=0.1)
 
-    fig.suptitle('Regression Performance: Multiple Metrics', fontsize=14, fontweight='bold')
-    plt.tight_layout()
+    fig.suptitle('Regression Performance: Multiple Metrics', fontsize=14, fontweight='bold', y=0.98)
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.savefig(output_dir / 'fig7_multi_metric_regression.png', dpi=300, bbox_inches='tight')
     plt.close()
 
@@ -202,7 +214,7 @@ if len(reg_results) > 0:
 # ============================================================================
 print("[8/12] Multi-metric comparison - classification...")
 if len(clf_results) > 0:
-    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+    fig, axes = plt.subplots(2, 2, figsize=(16, 12), constrained_layout=False)
     axes = axes.flatten()
 
     metrics = ['metric_test_f1', 'metric_test_precision', 'metric_test_recall', 'metric_test_pr_auc']
@@ -216,19 +228,30 @@ if len(clf_results) > 0:
 
         bars = ax.bar(x, values, color=colors[:len(models)], edgecolor='black', linewidth=1.5)
 
+        # Add labels with offset points to prevent overlap with axes/top
         for bar, val in zip(bars, values):
             height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width()/2., height + (height * 0.02),
-                    f'{val:.3f}', ha='center', va='bottom', fontsize=9, fontweight='bold')
+            ax.annotate(f'{val:.3f}',
+                        xy=(bar.get_x() + bar.get_width() / 2.0, height),
+                        xytext=(0, 4),
+                        textcoords='offset points',
+                        ha='center',
+                        va='bottom',
+                        fontsize=8,
+                        fontweight='bold')
 
         ax.set_title(title, fontsize=11, fontweight='bold')
         ax.set_xticks(x)
-        ax.set_xticklabels([m.replace('_', ' ').title() for m in models], fontsize=9)
-        ax.set_ylim(0, max(values) * 1.2)
+        ax.set_xticklabels([m.replace('_', ' ').title() for m in models], rotation=30, ha='right', fontsize=9)
+        # Provide vertical margins and headroom for text labels
+        y_min, y_max = float(values.min()), float(values.max())
+        y_range = max(1e-6, y_max - y_min)
+        ax.set_ylim(max(0.0, y_min - 0.15 * y_range), y_max + 0.25 * y_range)
+        ax.margins(y=0.1)
         ax.grid(True, alpha=0.3, axis='y')
 
-    fig.suptitle('Classification Performance: Multiple Metrics', fontsize=14, fontweight='bold')
-    plt.tight_layout()
+    fig.suptitle('Classification Performance: Multiple Metrics', fontsize=14, fontweight='bold', y=0.98)
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.savefig(output_dir / 'fig8_multi_metric_classification.png', dpi=300, bbox_inches='tight')
     plt.close()
 
@@ -286,7 +309,7 @@ if len(reg_results) > 0:
     ax.set_ylabel('MAE Improvement over Baseline (%)', fontsize=12, fontweight='bold')
     ax.set_title('Performance Improvement Over Baseline (Predicting Mean)', fontsize=14, fontweight='bold')
     ax.set_xticks(x)
-    ax.set_xticklabels([m.replace('_', ' ').title() for m in models])
+    ax.set_xticklabels([m.replace('_', ' ').title() for m in models], rotation=45, ha='right', fontsize=8)
     ax.grid(True, alpha=0.3, axis='y')
     plt.tight_layout()
     plt.savefig(output_dir / 'fig10_improvement_baseline.png', dpi=300, bbox_inches='tight')
