@@ -22,12 +22,12 @@ This report presents preliminary findings from a comprehensive hyperparameter se
 
 ✅ **Best Classification Performance**:
 - **XGBoost** achieves **Test F1: 0.34** and **PR-AUC: 0.70** for predicting high-intensity episodes
-- High precision (66%) but moderate recall (23%)
+- Moderately high precision (66%) but low recall (23%)
 - Models are conservative but accurate when predicting high-intensity events
 
 ✅ **Framework Validated**: Complete modular hyperparameter search framework successfully implemented and tested with 4 experiments across 2 models and 2 prediction targets.
 
-### Primary Recommendations
+### Primary Recommendations for the Rest of the Project
 
 1. **Deploy Random Forest for intensity prediction** (n_estimators=100, max_depth=5)
 2. **Deploy XGBoost for high-intensity classification** (n_estimators=100, max_depth=10)
@@ -1068,7 +1068,7 @@ CSCI-461-Project/
 
 ### Appendix E: Reproducibility
 
-All results reproducible with:
+All results reproducible on our repository  with:
 ```bash
 python run_hyperparameter_search.py --mode quick
 ```
