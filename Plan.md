@@ -66,11 +66,11 @@ Final Presentation & Report
 
 4. Data
 
-Primary Dataset: Mobile tracking application data collected April-September 2025
-Size: 1,367 tic occurrence records from 70 unique users across 103 days
+Primary Dataset: Mobile tracking application data collected April-October 2025
+Size: 1,533 tic occurrence records from 89 unique users across 182 days
 Source: Anonymized user-submitted data via mobile application
 Key Fields:
-Core: userId, ticId, date, intensity (1-10 scale), timeOfDay (5 categories), type (77 unique types), age, gender
+Core: userId, ticId, date, intensity (1-10 scale), timeOfDay (5 categories), type (82 unique types), age, gender
 Optional: mood (53.3% coverage, 10 states), trigger (35.3% coverage, 10 categories), description (31.7% coverage)
 
 4.1 Data Statistics:
