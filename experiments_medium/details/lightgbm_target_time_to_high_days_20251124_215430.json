@@ -1,0 +1,62 @@
+{
+  "run_id": "lightgbm_target_time_to_high_days_20251124_215430",
+  "timestamp": "20251124_215430",
+  "model_name": "lightgbm",
+  "target_type": "target_time_to_high_days",
+  "config": {
+    "high_intensity_threshold": 7,
+    "n_lags": 3,
+    "window_days": [
+      3,
+      7,
+      14
+    ],
+    "k_days_list": [
+      1,
+      3,
+      7
+    ],
+    "feature_set": "all",
+    "subsample": 0.8,
+    "num_leaves": 127,
+    "n_estimators": 200,
+    "min_child_samples": 5,
+    "max_depth": 10,
+    "learning_rate": 0.01,
+    "colsample_bytree": 0.6,
+    "model_name": "lightgbm",
+    "target_col": "target_time_to_high_days",
+    "task_type": "regression",
+    "n_train_samples": 1236,
+    "n_test_samples": 209,
+    "n_features": 52,
+    "search_type": "random",
+    "search_time_seconds": 70.6678102016449,
+    "best_cv_score": -8.659743151871561,
+    "n_iter": 50
+  },
+  "metrics": {
+    "train_mae": 1.583139214548956,
+    "train_rmse": 3.382528810878944,
+    "train_mse": 11.441501156426124,
+    "train_r2": 0.9067041078364374,
+    "train_mean_error": 1.5711322435069713e-08,
+    "train_median_abs_error": 1.002795965195912,
+    "train_max_error": 43.644774184964376,
+    "train_mape": 47181745411.13532,
+    "test_mae": 7.178338610298823,
+    "test_rmse": 16.32948141817473,
+    "test_mse": 266.65196338651384,
+    "test_r2": -0.08836528376509545,
+    "test_mean_error": 1.4111294976864879,
+    "test_median_abs_error": 4.261197867247296,
+    "test_max_error": 119.95028084304258,
+    "test_mape": 308573555821.94745,
+    "test_baseline_mae": 7.779687117679656,
+    "test_baseline_rmse": 15.843603227545067,
+    "test_mae_improvement": 7.7297261224586284,
+    "test_rmse_improvement": -3.066715214029937,
+    "train_time_seconds": 2.1755478382110596
+  },
+  "additional_info": {}
+}

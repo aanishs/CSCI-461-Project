@@ -1,0 +1,52 @@
+================================================================================
+THRESHOLD OPTIMIZATION FOR HIGH-INTENSITY CLASSIFICATION
+================================================================================
+
+Model: xgboost
+Target: target_next_high_intensity
+High-intensity threshold: ≥7
+
+Loading data...
+Engineering features...
+Generating targets...
+Splitting data (user-grouped)...
+
+Train size: 1236, Test size: 209
+Positive class rate (train): 16.10%
+Positive class rate (test): 47.85%
+
+Training xgboost model...
+Model trained successfully!
+
+Optimizing classification threshold...
+
+============================================================
+THRESHOLD OPTIMIZATION RESULTS
+============================================================
+
+Optimal Threshold: 0.0397
+  Precision: 0.5897
+  Recall:    0.9200
+  F1-Score:  0.7188
+  Accuracy:  0.6555
+
+Default Threshold (0.5):
+  Precision: 0.6486
+  Recall:    0.2400
+  F1-Score:  0.3504
+
+Improvement:
+  F1-Score:  +0.3684 (105.1%)
+  Recall:    +0.6800 (283.3%)
+
+Generating threshold analysis plot...
+Threshold analysis plot saved to: report_figures/fig26_threshold_analysis.png
+Metrics saved to: report_figures/threshold_optimization_results.csv
+
+================================================================================
+THRESHOLD OPTIMIZATION COMPLETE
+================================================================================
+
+Recommendation: Use threshold = 0.0397 for deployment
+Expected F1-Score: 0.7188
+Expected Recall: 0.9200 (catches 92.0% of high-intensity episodes)

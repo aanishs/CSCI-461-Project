@@ -1,0 +1,59 @@
+{
+  "run_id": "xgboost_target_time_to_high_days_20251124_213030",
+  "timestamp": "20251124_213030",
+  "model_name": "xgboost",
+  "target_type": "target_time_to_high_days",
+  "config": {
+    "high_intensity_threshold": 7,
+    "n_lags": 3,
+    "window_days": [
+      7
+    ],
+    "k_days_list": [
+      1,
+      3,
+      7
+    ],
+    "feature_set": "all",
+    "subsample": 1.0,
+    "n_estimators": 300,
+    "min_child_weight": 1,
+    "max_depth": 7,
+    "learning_rate": 0.2,
+    "colsample_bytree": 0.8,
+    "model_name": "xgboost",
+    "target_col": "target_time_to_high_days",
+    "task_type": "regression",
+    "n_train_samples": 1236,
+    "n_test_samples": 209,
+    "n_features": 34,
+    "search_type": "random",
+    "search_time_seconds": 3.6874301433563232,
+    "best_cv_score": -7.309250074435293,
+    "n_iter": 50
+  },
+  "metrics": {
+    "train_mae": 0.0011545298734075228,
+    "train_rmse": 0.001686105459437103,
+    "train_mse": 2.842951620343604e-06,
+    "train_r2": 0.9999999768181025,
+    "train_mean_error": 2.781436025386797e-08,
+    "train_median_abs_error": 0.0007531657028253536,
+    "train_max_error": 0.010704331363569963,
+    "train_mape": 18029516.12424346,
+    "test_mae": 10.979294606195072,
+    "test_rmse": 18.0143505556383,
+    "test_mse": 324.5168259414259,
+    "test_r2": -0.3245462094735547,
+    "test_mean_error": 5.672871323274465,
+    "test_median_abs_error": 7.305282104362205,
+    "test_max_error": 118.01697624651193,
+    "test_mape": 530754475072.0299,
+    "test_baseline_mae": 7.779687117679656,
+    "test_baseline_rmse": 15.843603227545067,
+    "test_mae_improvement": -41.127714265579876,
+    "test_rmse_improvement": -13.701096252645705,
+    "train_time_seconds": 0.6371419429779053
+  },
+  "additional_info": {}
+}
