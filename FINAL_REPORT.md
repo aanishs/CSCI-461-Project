@@ -1,10 +1,6 @@
 # Predicting Tic Episode Patterns: A Machine Learning Approach to Intensity and High-Risk Event Forecasting
 
-**Aanish Sachdev**
-CSCI-461: Machine Learning
-University of [Your Institution]
-Fall 2025
-aanishs@[email].edu
+**Aanish Sachdev, Aarav Monga, Arjun Bedi, Alan Yusuf**
 
 ---
 
