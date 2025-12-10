@@ -59,11 +59,12 @@ Expected runtime: **10-15 minutes**. Results saved to `report_figures/`.
 **Core Analyses (Post-Presentation Updates):**
 ```bash
 cd src/
-python threshold_calibration.py     # Proper train/cal/test split (Section 4.4)
-python kfold_evaluation.py          # 5-fold user-grouped CV (Section 5.4)
-python feature_selection.py         # RFE, L1, MI, Tree methods (Section 6.2)
-python fairness_analysis.py         # Subgroup performance (Section 6.6)
-python temporal_validation.py       # August 2025 temporal split (Section 4.6)
+python threshold_calibration.py            # User-grouped train/cal/test split (Section 5.2.1)
+python temporal_threshold_calibration.py   # NEW: Temporal train/cal/test split (Section 5.2.2)
+python kfold_evaluation.py                 # 5-fold user-grouped CV (Section 5.4)
+python feature_selection.py                # RFE, L1, MI, Tree methods (Section 6.2)
+python fairness_analysis.py                # Subgroup performance (Section 6.6)
+python temporal_validation.py              # August 2025 temporal split (Section 4.6)
 ```
 
 **Additional Analyses:**

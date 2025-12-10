@@ -187,26 +187,56 @@ Logs all experiments to JSON for reproducibility.
 These modules implement the analyses reported in **Section 5 (Results)** and **Section 6 (Analysis)**.
 
 ### `src/threshold_calibration.py` ⭐ **NEW**
-**Referenced in:** Section 4.4 (Threshold Calibration Methodology)
+**Referenced in:** Section 5.2.1 (User-Grouped Validation - Threshold Optimization)
 
-Implements proper train/calibration/test split for threshold selection.
+Implements proper user-grouped train/calibration/test split for threshold selection.
 
 **Key Classes:**
 - `ProperThresholdCalibrator` - Calibrates threshold on separate calibration set
 
 **Key Functions:**
-- `train_calibrate_test_split()` - Splits data 60%/20%/20%
+- `train_calibrate_test_split()` - Splits data 60%/20%/20% by users
 - `run_proper_threshold_calibration()` - Full calibration pipeline
 
 **Results:**
-- Calibrated threshold: 0.3367 (vs 0.5 default)
-- Test F1: 0.44 (vs 0.17), Recall: 0.32 (vs 0.10)
-- Improvement: 154.7% F1 increase
+- Calibrated threshold: 0.04 (vs 0.5 default)
+- Test F1: 0.72, Precision: 0.59, Recall: 0.92
+- Improvement: 111% F1 increase over default
 
 **Usage:**
 ```python
 from src.threshold_calibration import run_proper_threshold_calibration
 threshold, cal_metrics, test_metrics, default_metrics, model = run_proper_threshold_calibration()
+```
+
+---
+
+### `src/temporal_threshold_calibration.py` ⭐ **NEW**
+**Referenced in:** Section 5.2.2 (Temporal Validation - Threshold Optimization)
+
+Implements proper temporal train/calibration/test split for threshold selection using time-based splitting.
+
+**Key Classes:**
+- `ProperThresholdCalibrator` - Reused from threshold_calibration.py
+
+**Key Functions:**
+- `temporal_train_cal_test_split()` - Splits by dates: Train (May-July 15), Cal (July 16-31), Test (Aug 1-Oct 26)
+- `run_temporal_threshold_calibration()` - Full temporal calibration pipeline
+
+**Results:**
+- Calibrated threshold: 0.02 (vs 0.5 default)
+- Test F1: 0.43, Precision: 0.28, Recall: 0.96
+- Improvement: 32.6% F1 increase, 193% recall increase
+
+**Key Insight:**
+- Temporal validation requires even lower threshold (0.02) than user-grouped (0.04)
+- Despite patient history, model still conservative in probability estimates
+- User-grouped with calibrated threshold (F1=0.72) outperforms temporal (F1=0.43) after optimization
+
+**Usage:**
+```python
+from src.temporal_threshold_calibration import run_temporal_threshold_calibration
+threshold, cal_metrics, test_metrics, default_metrics, model, metrics_df = run_temporal_threshold_calibration()
 ```
 
 ---
@@ -428,9 +458,14 @@ python run_hyperparameter_search.py
 
 ### 3. Run Individual Analyses
 
-**Threshold Calibration:**
+**User-Grouped Threshold Calibration:**
 ```bash
 python src/threshold_calibration.py
+```
+
+**Temporal Threshold Calibration:**
+```bash
+python src/temporal_threshold_calibration.py
 ```
 
 **5-Fold Cross-Validation:**
@@ -477,7 +512,9 @@ Full list in `requirements.txt`
 
 All analysis scripts save results to `report_figures/`:
 
-- `proper_threshold_calibration_results.csv`
+- `proper_threshold_calibration_results.csv` (user-grouped threshold calibration)
+- `temporal_threshold_calibration_results.csv` (temporal threshold calibration)
+- `temporal_threshold_scan.csv` (full threshold scan for temporal validation)
 - `kfold_regression_results.csv`, `kfold_classification_results.csv`
 - `kfold_regression_user_results.csv`, `kfold_classification_user_results.csv`
 - `fairness_regression_results.csv`, `fairness_classification_results.csv`
@@ -497,11 +534,12 @@ All analysis scripts save results to `report_figures/`:
 | 4.1 Model Architectures | `models.py` |
 | 4.2 Hyperparameter Search | `hyperparameter_search.py` |
 | 4.3 Evaluation Metrics | `evaluation.py` |
-| **4.4 Threshold Calibration** | **`threshold_calibration.py`** ⭐ |
 | 4.5 Cross-Validation | `validation.py` |
 | 4.6 Temporal Validation | `temporal_validation.py` ⭐ |
 | 5.1 Regression Results | All core modules |
-| 5.2 Classification Results | `threshold_optimization.py` |
+| **5.2.1 User-Grouped Classification** | **`threshold_calibration.py`** ⭐ |
+| **5.2.2 Temporal Classification** | **`temporal_threshold_calibration.py`** ⭐ |
+| **5.2.3 Validation Comparison** | Both threshold calibration scripts ⭐ |
 | 5.3 Extended Targets | `evaluate_future_targets.py` |
 | **5.4 5-Fold CV Results** | **`kfold_evaluation.py`** ⭐ |
 | 5.4 Statistical Tests | `statistical_tests.py` |
