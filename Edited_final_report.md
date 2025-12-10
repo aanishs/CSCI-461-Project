@@ -12,12 +12,15 @@
 
 **Key Results:**
 
-1. **Regression Performance (User-Grouped Validation):**
-   - Random Forest: MAE = 1.94, representing **27.8% improvement over baseline** (p < 0.0001)
-   - Temporal Validation: MAE = 1.46, representing **24.7% additional improvement** with patient history
-   - Patient-specific history is the dominant driver of regression accuracy
+1. **Regression Performance**
 
-2. **Classification Performance with Proper Threshold Calibration:**
+   *User-Grouped Validation (predicting for new patients):*
+   - Random Forest: MAE = 1.94, representing **27.8% improvement over baseline** (p < 0.0001)
+
+   *Temporal Validation (predicting for patients with history):*
+   - Random Forest: MAE = 1.46, representing **24.7% additional improvement** with patient history
+
+2. **Classification Performance**
 
    *User-Grouped Validation (predicting for new patients):*
    - Default threshold (0.5): F1 = 0.17, Precision = 0.59, Recall = 0.10
@@ -319,20 +322,6 @@ To assess whether models trained on historical data generalize to future time pe
 
 Both capabilities are clinically relevant but may exhibit different performance characteristics depending on whether tic patterns are more heterogeneous across individuals or across time.
 
-**Empirical Finding: Temporal vs. User-Grouped Performance.** Figure 8 compares model performance under both validation strategies, revealing that models perform substantially **better** with temporal splits (August 2025 cutoff) than with user-grouped splits. For regression, temporal validation achieves MAE=1.46 compared to MAE=1.82 for user-grouped validation, representing a 19.8% improvement. For classification, temporal validation achieves F1=0.44 compared to F1=0.24 for user-grouped validation, an 83% improvement.
-
-![Temporal vs User-Grouped Validation](report_figures/fig29_temporal_validation.png)
-*Figure 8: Comparison of model performance under temporal validation (predicting future episodes for known users) versus user-grouped validation (predicting for entirely new users). Temporal validation shows substantially better performance across both regression (17% lower MAE) and classification (103% higher F1) tasks. Error bars represent 95% bootstrap confidence intervals.*
-
-**Interpretation.** This counterintuitive finding suggests that tic episode patterns exhibit greater **temporal stability within individuals** than **consistency across individuals**. In other words, an individual's future episodes are more predictable from their own history than a new patient's episodes are from other patients' patterns. This implies that user heterogeneity (inter-individual variability) poses a greater modeling challenge than temporal drift (intra-individual changes over time).
-
-**Clinical Implications.** The temporal validation results have important implications for deployment:
-1. **Personalization is critical**: Models benefit substantially from patient-specific history, suggesting personalized prediction systems will outperform population-level models.
-2. **Longitudinal monitoring**: For patients with established tic tracking history, prediction accuracy should improve over time as more patient-specific data accumulates.
-3. **Cold-start problem**: New patients without tracking history represent the hardest prediction scenario, as user-grouped results indicate.
-4. **Temporal stability**: Tic patterns appear relatively stable over time within individuals, suggesting interventions targeting long-term pattern modification may be feasible.
-
-This temporal stability finding challenges assumptions about high user heterogeneity in tic disorders and suggests that longitudinal, patient-centered treatment approaches may be particularly effective [42].
 
 ---
 
@@ -477,40 +466,6 @@ As shown in Figure 8 (from Section 4.6), temporal validation achieves superior p
 - **Temporal (threshold=0.5)**: Precision=0.32, Recall=0.33, F1=0.32 — Balanced but suboptimal
 - **Temporal (calibrated threshold=0.02)**: Precision=0.28, Recall=0.96, F1=0.43 — Very aggressive, maximizing recall
 
-**Key Observations:**
-
-1. **Both validation strategies benefit from threshold calibration**: Proper threshold calibration substantially improves performance for both strategies. User-grouped improves from F1=0.17 to F1=0.44 (155% improvement), while temporal improves from F1=0.32 to F1=0.43 (34% improvement). The calibrated thresholds differ substantially (user-grouped: 0.337; temporal: 0.02), reflecting different probability calibration profiles.
-
-2. **Temporal validation does not yield better-calibrated probabilities**: Contrary to our initial hypothesis, temporal validation with patient-specific history does not produce better-calibrated probability estimates. The calibrated temporal threshold (0.02) is much lower than the user-grouped threshold (0.337), suggesting that temporal models assign lower probabilities to positive predictions, requiring more aggressive threshold reduction to achieve high recall.
-
-3. **Both strategies achieve similar F1 after calibration**: With properly calibrated thresholds, both validation strategies achieve similar F1 scores (user-grouped: 0.44; temporal: 0.43), but with fundamentally different precision-recall profiles. User-grouped achieves higher precision (68%) with lower recall (32%), minimizing false alarms for new patients. Temporal achieves lower precision (28%) with very high recall (96%), maximizing sensitivity for established patients with tracking history.
-
-4. **Default threshold performance varies dramatically by strategy**: User-grouped validation at default threshold performs very poorly (F1=0.17), while temporal performs moderately (F1=0.32). This suggests that default thresholds are particularly inappropriate for user-grouped validation, where the model is highly conservative in predicting positive cases for new patients without history.
-
-**Clinical Implications.** The comprehensive validation strategy and threshold calibration comparison has critical implications for clinical deployment:
-
-1. **Universal Need for Proper Threshold Calibration**: Both validation strategies require threshold calibration to achieve acceptable performance. Default thresholds (0.5) are particularly problematic for user-grouped validation (F1=0.17) and suboptimal for temporal validation (F1=0.32). Proper calibration using dedicated calibration sets yields 34-155% improvements while ensuring reported performance will generalize to deployment.
-
-2. **Context-Aware Deployment Strategy**: The choice between validation strategies should depend on patient context and clinical priorities:
-   - **New patients**: User-grouped model (threshold=0.337) provides moderate recall (32%) with high precision (68%), minimizing false alarms
-   - **Established patients**: Temporal model (threshold=0.02) provides very high recall (96%) with lower precision (28%), maximizing sensitivity
-
-3. **Validation Strategy Determines Precision-Recall Profile**: The optimal thresholds and resulting performance profiles differ substantially:
-   - **New users** (user-grouped): threshold=0.337 → F1=0.44, Precision=68%, Recall=32%
-   - **Established users** (temporal): threshold=0.02 → F1=0.43, Precision=28%, Recall=96%
-
-   Despite similar F1 scores, the strategies offer fundamentally different clinical value propositions. User-grouped prioritizes precision to minimize false alarms for new patients, while temporal prioritizes recall to maximize sensitivity for established patients.
-
-4. **Both Strategies Achieve Similar F1**: With proper calibration, both validation strategies achieve similar overall performance (F1 ~0.43-0.44), challenging the assumption that temporal validation is uniformly superior. The choice depends on whether minimizing false alarms (user-grouped) or maximizing sensitivity (temporal) is more important for a given patient context.
-
-5. **Trade-off Communication**: Deployment choices should clearly communicate expected alert characteristics:
-   - **User-grouped (68% precision, 32% recall)**: ~2 false alarms for every 3 true alerts; catches 32% of high-intensity episodes
-   - **Temporal (28% precision, 96% recall)**: ~5 false alarms for every 2 true alerts; catches 96% of high-intensity episodes
-
-**Training Time Comparison.** Figure 14 plots training time versus F1-score for all models under user-grouped validation, revealing efficiency trade-offs. Random Forest achieves F1 of 0.33 in just 0.048 seconds, making it the fastest model. XGBoost requires 0.145 seconds to achieve F1 of 0.34, trading 3× longer training time for a modest F1 improvement. LightGBM trains in 0.051 seconds but achieves only F1 of 0.21.
-
-![Training Time vs Performance](report_figures/fig11_training_time.png)
-*Figure 14: Trade-off between training time (seconds) and F1-score for classification models under user-grouped validation. Random Forest offers the best speed-performance ratio (F1=0.33, time=0.05s), while XGBoost achieves slightly better F1 (0.34) at 3× the training time (0.15s). LightGBM is fast but achieves lower F1.*
 
 **Summary of Classification Findings.** XGBoost is the recommended model for high-intensity episode classification across both validation scenarios. Proper threshold calibration using dedicated calibration sets reveals distinct performance profiles:
 
@@ -564,48 +519,7 @@ The learning curves show that both regression MAE and classification F1 continue
 
 XGBoost shows generally good calibration, with predicted probabilities closely tracking observed frequencies in the critical 10-40% range where most predictions concentrate. This calibration quality validates the use of probabilistic thresholds and supports user-configurable alert sensitivity settings. Minor overconfidence appears in the 50-80% range (model predicts 60% probability but only 50% are actual high-intensity), but this affects relatively few predictions as evidenced by the probability distribution histogram.
 
-### 5.4 Robustness Evaluation: 5-Fold User-Grouped Cross-Validation
-
-To assess model robustness and obtain reliable performance estimates with uncertainty quantification under the **user-grouped validation** scenario, we conducted 5-fold user-grouped cross-validation where each user appears in the test fold exactly once. This evaluation strategy provides a more comprehensive assessment of new-user generalization than the single 80/20 train-test split, enabling us to quantify performance variance across different user partitions and identify per-user predictability patterns.
-
-**Methodology.** We partitioned the 43 users (after filtering for minimum episode requirements) into 5 folds, ensuring that all episodes from a given user appear in the same fold. For each fold iteration, we trained the model on 4 folds (approximately 80% of users) and evaluated on the remaining fold (approximately 20% of users). This process was repeated 5 times with each fold serving as the test set exactly once. Performance metrics were computed for each fold and aggregated to produce mean and standard deviation estimates. **Importantly, this 5-fold cross-validation uses user-grouped splitting**, ensuring that test users in each fold are entirely unseen during training, matching the validation strategy described in Section 4.5 and Section 5.1.1/5.2.1.
-
-**Note on Classification Threshold:** The classification results reported below used an exploratory threshold that predates the proper calibration methodology described in Section 4.4. These results should be re-run with the properly calibrated threshold=0.337 for direct comparability with Section 5.2.
-
-**Regression Performance (Random Forest - User-Grouped).** The 5-fold user-grouped cross-validation for next intensity prediction yielded the following results:
-- **Mean MAE:** 1.47 ± 0.42 (range: 0.89 to 1.98 across folds)
-- **Mean RMSE:** 1.84 ± 0.46 (range: 1.21 to 2.43)
-
-The substantial variance in performance across folds (MAE ranging from 0.89 to 1.98) reflects heterogeneity in user predictability. Fold 2 achieved exceptionally low MAE (0.89), indicating that some user groups exhibit highly predictable tic patterns, while Fold 3 showed slightly negative R² (-0.05), indicating episodes that are harder to predict than simply using the mean. This fold-to-fold variance is clinically important: it suggests that approximately 20% of users have tic patterns that are highly amenable to prediction (MAE < 1.0), while another 20% exhibit more stochastic patterns that challenge current feature representations.
-
-**Note on MAE Variability Across User-Grouped Evaluations.** The mean MAE of 1.47 from 5-fold CV is lower than the 1.94 MAE from the single 80/20 test set reported in Section 5.1.1, and both differ from the 1.82 MAE reported by the temporal validation script's user-grouped split. These variations reflect three sources of uncertainty in user-grouped validation:
-
-1. **Random Split Variation**: Different random train-test splits produce different MAE values (1.47-1.94 range) because the specific users assigned to test sets vary in their inherent predictability. Some random splits happen to place more "easy" users in the test set (yielding lower MAE), while others place more "difficult" users in the test set (yielding higher MAE).
-
-2. **Fold Averaging Effects**: The 5-fold CV mean (1.47) benefits from averaging across 5 different test sets, smoothing out the fold-to-fold variance (SD=0.42). Individual folds range from MAE=0.89 to MAE=1.98, demonstrating substantial variability. The single 80/20 split (MAE=1.94) represents just one realization from this distribution.
-
-3. **User Heterogeneity**: The per-user performance analysis (below) confirms that prediction difficulty varies dramatically across individuals, with 21% achieving MAE<1.0 and 28% exceeding MAE>2.0. This heterogeneity means test set composition strongly influences observed MAE.
-
-All three MAE values (1.47, 1.82, 1.94) are valid estimates of user-grouped performance, with the truth lying somewhere in the 1.5-1.9 range depending on test set composition. The 5-fold CV estimate (1.47 ± 0.42) provides the most robust estimate with uncertainty quantification, suggesting 95% CI of approximately [0.8, 2.1] for user-grouped MAE. For deployment expectations, we recommend citing MAE≈1.5-1.9 for new users without historical data, acknowledging that performance will vary substantially depending on individual user characteristics.
-
-**Classification Performance (XGBoost).** The 5-fold cross-validation for high-intensity prediction yielded:
-- **Mean Precision:** 0.36 ± 0.16 (range: 0.18 to 0.58)
-- **Mean Recall:** 0.86 ± 0.04 (range: 0.81 to 0.91)
-- **Mean F1-score:** 0.49 ± 0.16 (range: 0.30 to 0.69)
-- **Mean ROC-AUC:** 0.78 ± 0.10 (range: 0.67 to 0.90)
-
-The exploratory threshold used in this analysis successfully achieves high recall (86% ± 4%) consistently across all folds, confirming that the model can reliably identify the majority of high-intensity episodes regardless of which users appear in the test set. However, precision varies substantially (36% ± 16%), indicating that some user groups generate more false positives than others. Fold 2 achieved the best performance (F1=0.60, ROC-AUC=0.90), while Fold 3 showed the lowest (F1=0.38, ROC-AUC=0.67).
-
-**Note:** The 5-fold CV results reported above (F1=0.49, Precision=0.36, Recall=0.86) were obtained using an exploratory threshold that differs from the properly calibrated threshold=0.337 reported in Section 5.2 (F1=0.44, Precision=0.68, Recall=0.32). The 5-fold CV analysis should be re-run with threshold=0.337 for direct comparability. The mean ROC-AUC of 0.78 ± 0.10 provides a threshold-independent performance measure, confirming strong discriminative ability with moderate variance across user partitions.
-
-**Per-User Performance Variability.** The 5-fold CV framework enables analysis of per-user performance by aggregating predictions across the fold where each user served as test data. Among the 43 users evaluated:
-- **High predictability users (MAE < 1.0):** 9 users (21%) show excellent prediction accuracy, with some achieving MAE as low as 0.5
-- **Medium predictability users (MAE 1.0-2.0):** 22 users (51%) show moderate prediction accuracy
-- **Low predictability users (MAE > 2.0):** 12 users (28%) show poor prediction accuracy, with some exceeding MAE of 4.0
-
-This distribution suggests that tic predictability is heterogeneous across individuals. Users with more episodes and stable temporal patterns show lower MAE, while users with sparse data (<10 episodes) or highly erratic patterns show higher MAE. Future work could develop user-specific confidence estimates based on historical pattern stability to communicate prediction reliability.
-
-**Implications for Deployment.** The 5-fold CV results validate that model performance is reasonably stable across different user partitions, though with meaningful variance. The high recall (86%) achieved with the calibrated threshold confirms that the model successfully identifies most high-intensity episodes across diverse user groups, making it suitable for clinical early warning applications. However, the precision variance (36% ± 16%) indicates that alert frequency will vary across users, necessitating user-specific threshold tuning or explicit communication about expected false positive rates during deployment onboarding.
+.
 
 ### 5.5 Summary Tables
 
@@ -613,13 +527,13 @@ Table 2 presents complete regression results across all models and metrics under
 
 **Table 2: Complete Regression Results (Target 1: Next Intensity)**
 
-| Model | Train MAE | Train RMSE | Train R² | **User-Grouped Test MAE** | **User-Grouped Test RMSE** | User-Grouped Test R² | **Temporal Test MAE** | Temporal Improvement | Training Time (s) |
+| Model | Train MAE | Train RMSE | **User-Grouped Test MAE** | **User-Grouped Test RMSE** | **Temporal Test MAE** | Temporal Improvement | Training Time (s) |
 |-------|-----------|------------|----------|----------|-----------|---------|---------|---------|-------------------|
 | **Random Forest** | **1.8965** | 2.4632 | 0.0923 | **1.9377** | **2.5122** | **0.0809** | **1.4584** | **24.7%** | 0.0487 |
-| XGBoost | 1.9234 | 2.4889 | 0.0845 | 1.9887 | 2.5630 | 0.0413 | ~1.50 | ~24% | 0.0794 |
-| LightGBM | 1.9187 | 2.4821 | 0.0873 | 1.9919 | 2.5665 | 0.0386 | ~1.50 | ~25% | 0.0512 |
-| *Baseline (Global Mean)* | - | - | - | 2.685 | 3.214 | 0.000 | 2.685 | 0% | - |
-| *Baseline (User Mean)* | - | - | - | 2.562 | 3.087 | 0.025 | ~2.40 | ~6% | - |
+| XGBoost | 1.9234 | 2.4889 | 1.9887 | 2.5630  ~1.50 | ~24% | 0.0794 |
+| LightGBM | 1.9187 | 2.4821 | 1.9919 | 2.5665 | ~1.50 | ~25% | 0.0512 |
+| *Baseline (Global Mean)* | - | - | 2.685 | 3.214 | 2.685 | 0% | - |
+| *Baseline (User Mean)* | - | - | 2.562 | 3.087 | ~2.40 | ~6% | - |
 
 *Best performance in each column shown in bold. Random Forest achieves lowest MAE under both validation strategies: 1.94 (user-grouped, new patients) and 1.46 (temporal, known patients), representing 27.8% improvement over global mean baseline for user-grouped and 45.6% improvement for temporal. The 24.7% temporal improvement demonstrates that patient-specific historical data is the dominant driver of predictive accuracy. All training performed in under 0.1 seconds.*
 
@@ -637,44 +551,6 @@ Table 3 presents complete classification results under both validation strategie
 | *Baseline (Always Predict Low)* | 0.00 | 0.00 | - | 0.00/0.00 | 0.00 | 0.00 | - | 0.00/0.00 | - |
 
 *Best performance in each column shown in bold. Default threshold = 0.5 for all models. Calibrated thresholds are optimized on calibration sets to maximize F1-score. XGBoost achieves best performance across all scenarios.*
-
-**Performance Summary by Validation Strategy and Threshold:**
-
-1. **User-Grouped Validation:**
-   - Default (threshold=0.5): F1=0.17, Precision=0.59, Recall=0.10 — Very poor sensitivity
-   - **Calibrated (threshold=0.337): F1=0.44, Precision=0.68, Recall=0.32** — Balanced precision-recall
-
-2. **Temporal Validation:**
-   - Default (threshold=0.5): F1=0.32, Precision=0.32, Recall=0.33 — Suboptimal
-   - Calibrated (threshold=0.02): F1=0.43, Precision=0.28, Recall=0.96 — Maximum recall
-
-**Key Finding:** User-grouped validation with calibrated threshold (F1=0.44) and temporal validation with calibrated threshold (F1=0.43) achieve similar overall performance, but with very different precision-recall tradeoffs. User-grouped prioritizes precision (68%) at the cost of recall (32%), while temporal prioritizes recall (96%) at the cost of precision (28%).
-
-**Note on Classification F1 Variability:** *Default threshold F1 values vary across different random splits due to test set composition (F1=0.17 in this evaluation, F1=0.24 in temporal validation comparison). Both are valid estimates of user-grouped performance at threshold=0.5. However, with proper threshold calibration (threshold=0.337), user-grouped achieves consistent F1≈0.44 with balanced precision-recall (68%/32%). See Section 5.4 for detailed explanation of F1 variance across different data splits.*
-
-**Key Findings from Validation Comparison:**
-
-1. **Regression: Temporal validation substantially outperforms user-grouped validation**
-   - 24.7% improvement (MAE: 1.46 temporal vs 1.94 user-grouped)
-   - Patient-specific history is the dominant driver of regression accuracy
-   - Established users: MAE≈1.5; New users: MAE≈1.9
-
-2. **Classification: Threshold calibration reveals different precision-recall tradeoffs**
-   - **Default threshold (0.5)**: Temporal slightly better (F1=0.32 vs 0.17 — temporal more balanced)
-   - **Calibrated threshold**: Nearly equivalent F1 scores (user-grouped F1=0.44 vs temporal F1=0.43)
-   - User-grouped balances precision and recall (68%/32%), while temporal maximizes recall (96%) at the cost of precision (28%)
-
-3. **Threshold calibration is essential for both validation strategies**
-   - Default thresholds yield poor sensitivity (recall ~10-33%)
-   - Calibrated thresholds achieve different recall profiles: user-grouped (threshold=0.337, recall=32%) vs temporal (threshold=0.02, recall=96%)
-   - Temporal validation requires much lower threshold (0.02 vs 0.337) to maximize F1-score
-
-4. **Deployment recommendations:**
-   - **For regression**: Use patient-specific temporal models for established users (MAE≈1.5), population-level user-grouped models for new users (MAE≈1.9)
-   - **For classification**: Choose model based on clinical priority:
-     - **High precision priority** (minimize false alarms): User-grouped with threshold=0.337 (F1=0.44, Precision=68%, Recall=32%)
-     - **High recall priority** (catch all episodes): Temporal with threshold=0.02 (F1=0.43, Precision=28%, Recall=96%)
-   - Communicate precision-recall tradeoff: User-grouped misses ~68% of high-intensity episodes but has fewer false alarms; temporal catches ~96% but generates ~2.5 false alarms per true episode
 
 ---
 
@@ -713,10 +589,6 @@ Figure 17 presents a side-by-side comparison of the top 10 most important featur
 **Temporal Features Show Limited Impact.** Contrary to initial hypotheses that tic expression might show strong circadian or weekly rhythms, temporal features demonstrate surprisingly weak predictive power. The hour feature contributes only 2-3% importance, and day_of_week contributes less than 2%. This suggests that, at the population level, tic episode intensity is not strongly driven by time-of-day or day-of-week cycles. While individual users may experience time-dependent patterns (e.g., higher intensity in evening hours or on weekdays), these patterns do not generalize consistently across the population, resulting in low importance in the global model. Future work could explore user-specific temporal patterns through interaction features or user-stratified models.
 
 **Categorical Features Underutilized.** Features encoding tic type (type_encoded), mood (mood_encoded), and triggers (trigger_encoded) show minimal importance (1-2% each). Multiple factors explain this underperformance. First, the high cardinality of tic types (82 unique types) combined with label encoding creates a problematic representation where similar tic types are not necessarily assigned similar numeric codes. One-hot encoding was avoided due to the dimensionality explosion it would cause, but the label encoding approach fails to capture tic type similarities. Second, mood and trigger features contain substantial missing data (>40% missingness), as these optional fields are inconsistently reported by users. While missing values were encoded as a distinct category, the high missingness rate limits the features' informativeness. Third, the features may lack direct causal relationship with future intensity: the type of the current tic may not strongly predict the intensity of the next tic if tic types vary across episodes.
-
-**Model-Specific Differences.** While feature importance rankings are broadly similar across Random Forest and XGBoost, subtle differences emerge. XGBoost places slightly higher weight on prev_intensity_1 (18% vs. 15%), reflecting boosting's focus on the most discriminative feature for iterative error correction. Random Forest distributes importance more evenly across the top features, consistent with its ensemble of diverse trees that use different feature subsets. These differences are small in magnitude but theoretically consistent with the algorithms' optimization strategies.
-
-**Implications for Feature Engineering.** The feature importance analysis suggests several directions for future work. First, models could potentially be simplified using only the top 10-15 features (sequence features, time-window statistics, user-level features) without substantial performance loss, improving interpretability and reducing computation. Second, future feature engineering should focus on enhancing sequence-based and aggregation-based features rather than temporal features. For example, modeling longer sequences (last 5-10 episodes) or using additional time windows (14-day, 30-day) may capture additional patterns. Third, improving categorical feature encoding through embedding approaches or one-hot encoding with dimensionality reduction could unlock currently unused information about tic types and contextual factors.
 
 #### 6.2.1 SHAP Explainability Analysis
 
@@ -826,19 +698,11 @@ Users could adjust this setting over time based on their experience with predict
 
 **Privacy, Security, and Data Governance.** The sensitive nature of health data necessitates robust privacy protections throughout the deployment pipeline. On-device prediction capabilities provide inherent privacy advantages by keeping raw episode data on the user's mobile device rather than transmitting it to external servers. For users who opt into cloud-based features (cross-device synchronization, web dashboard access), all data transmission should use end-to-end encryption with TLS 1.3 or higher. Stored data should be encrypted at rest using AES-256. The system should implement granular consent mechanisms allowing users to control data sharing: (1) required data for basic prediction (episode history, feature computation); (2) optional data for research (anonymized episode patterns for improving population models); (3) optional data for clinical sharing (sharing predictions with healthcare providers). Compliance with HIPAA (in the US), GDPR (in Europe), and other regional healthcare privacy regulations is essential. Data retention policies should allow users to delete all historical data while maintaining the option to export their episode history for personal records or transfer to other platforms.
 
-**User Interface Design for Predictions and Alerts.** Effective communication of probabilistic predictions to non-technical users requires careful interface design that balances informativeness with interpretability. For intensity predictions, a visual timeline showing past episodes as a line chart with the next predicted episode highlighted in a different color provides intuitive context. The prediction should include both point estimate (e.g., "Predicted intensity: 7") and uncertainty visualization (e.g., shaded region representing ±1.94 MAE confidence interval, or discrete ranges like "Likely between 5-9"). Color coding (green for low predicted intensity 1-4, yellow for medium 5-6, red for high 7-10) provides at-a-glance risk assessment. For high-intensity classification, a probability gauge (0-100% likelihood) with threshold marker helps users understand confidence levels: "72% chance of high-intensity episode (above your alert threshold of 50%)".
-
-Alert notifications require thoughtful design to be actionable rather than anxiety-inducing. High-intensity warnings should include: (1) predicted intensity and probability, (2) brief explanation of key contributing factors ("Your last 3 episodes were intense and your weekly average is elevated"), (3) actionable recommendations ("Consider using your stress-reduction techniques or consulting with your care team"), (4) option to dismiss, snooze, or view details. Notification timing should respect user preferences for alert delivery: some users may prefer immediate alerts upon logging an episode, while others may prefer daily summary notifications. Alert fatigue mitigation strategies include limiting alerts to one per day unless patterns change substantially, providing "quiet hours" settings to prevent nighttime disruptions, and allowing users to temporarily disable alerts during known high-stress periods.
-
 **Explainability and Feature Contribution Displays.** To build trust and enable users to identify modifiable patterns, prediction explanations should highlight feature contributions in accessible language. For each prediction, the interface could display: "Why this prediction? Your recent episodes (intensity 7, 8, 7) suggest elevated activity. Your weekly average (6.2) is higher than your typical baseline (4.5). Recent pattern is trending upward." This natural language generation translates feature importance into clinically meaningful narratives. Advanced users could access detailed feature contribution breakdowns showing SHAP values or permutation importance scores, formatted as bar charts ranking the top 5 factors influencing the current prediction. Over time, aggregated explanations could reveal personal patterns: "Over the past month, your high-intensity episodes were most strongly associated with elevated weekly averages and sequences of 3+ moderate episodes."
 
 **Integration with Clinical Workflows.** For users working with healthcare providers (neurologists, psychiatrists, therapists specializing in tic disorders), the system should support clinician access through HIPAA-compliant provider portals. Clinicians could view longitudinal episode histories, prediction accuracy metrics, trend analyses, and pattern reports summarizing the patient's tic dynamics over the past 1-3 months. This information could inform treatment adjustments (e.g., "Model predictions show increasing baseline intensity over the past 6 weeks, suggesting medication titration may be beneficial") and enable data-driven conversations during appointments. Patients could grant time-limited access to specific providers, with audit logs tracking all clinician views of their data. Interoperability with electronic health record (EHR) systems through FHIR (Fast Healthcare Interoperability Resources) standards would allow episode data and predictions to be incorporated into the patient's comprehensive medical record.
 
 **Intervention Strategies and Closed-Loop Systems.** The ultimate goal of predictive modeling is to enable effective interventions that reduce tic severity and improve quality of life. Short-term interventions triggered by high-intensity predictions include: guided breathing exercises delivered through the mobile app, notifications to practice habit reversal training techniques, environmental modifications (finding a quiet space, reducing sensory stimuli), and communication with support networks (alerting a family member or therapist). Medium-term interventions based on trend analysis include: scheduling clinician appointments when predictions show sustained elevation, adjusting medication timing (e.g., taking as-needed medication proactively before predicted high-intensity periods), and identifying triggers through correlation analysis between predictions and contextual factors. Future systems could close the feedback loop by measuring intervention effectiveness: if a user employs a stress-reduction technique following a high-intensity alert, the system could track whether the subsequent actual intensity was lower than predicted, gradually learning which interventions are most effective for which users.
-
-**Performance Monitoring and Quality Assurance.** Deployed models require continuous monitoring to detect performance degradation, distribution shifts, or edge cases causing systematic errors. The system should track and display prediction accuracy metrics on a weekly basis: actual vs predicted intensity correlation, classification precision/recall, and calibration curves comparing predicted probabilities to actual high-intensity rates. If accuracy drops below acceptable thresholds (e.g., MAE increasing above 2.5 or F1-score dropping below 0.25), the system should trigger automatic model retraining or alert developers to investigate potential issues. User feedback mechanisms ("Was this prediction helpful? Yes/No") provide direct signal about prediction quality and interface effectiveness. A/B testing frameworks could evaluate improvements to prediction algorithms, feature engineering approaches, or interface designs by randomly assigning users to different model versions and comparing engagement metrics and user-reported satisfaction.
-
-**Scalability and Infrastructure Considerations.** While the current study involves 89 users and 1,533 episodes, a production deployment might scale to thousands or tens of thousands of users with millions of episodes. The lightweight nature of Random Forest and XGBoost models enables efficient scaling: a single server instance can handle thousands of prediction requests per second, and horizontal scaling through load balancing can accommodate larger user bases. Model training can be parallelized across users, as each user's personalized model is independent, allowing distributed training pipelines. Cloud infrastructure using AWS, Google Cloud, or Azure health-specific offerings (e.g., Google Cloud Healthcare API, AWS HealthLake) provides scalable compute, storage, and deployment platforms with built-in HIPAA compliance capabilities. Containerization using Docker and orchestration with Kubernetes enables reproducible deployments, easy scaling, and version management.
 
 **Evaluation in Real-World Pilot Studies.** Before widespread deployment, the prediction system should undergo rigorous pilot testing with representative user populations. A pilot study protocol would recruit 50-100 individuals with tic disorders, provide them with the mobile app and prediction features, and track both technical metrics (prediction accuracy, app usage, engagement) and clinical outcomes (tic severity ratings, quality of life measures, user satisfaction surveys) over a 3-6 month period. Mixed-methods evaluation combining quantitative metrics with qualitative interviews would identify usability issues, assess clinical utility, and gather feedback on alert helpfulness and interface design. Comparison between users randomly assigned to prediction-enabled vs standard tracking-only versions would establish whether predictive features improve outcomes beyond simple self-monitoring. Pilot results would inform refinements before broader release and provide evidence for clinical validation and regulatory approval if seeking designation as a medical device.
 
@@ -957,8 +821,6 @@ While this study demonstrates the feasibility of machine learning for tic episod
 
 **Feature Configuration Limitations.** The feature engineering pipeline employs several fixed design choices that may not be optimal. First, the time-window aggregation statistics use only a 7-day window, but alternative window sizes (3 days, 14 days, 30 days) may capture different temporal scales of tic patterns. Individuals experiencing rapid fluctuations might benefit from shorter windows, while those with longer-term trends might benefit from extended windows. Second, the sequence-based features encode only the last three episodes (prev_intensity_1, prev_intensity_2, prev_intensity_3), but longer sequence histories (5-10 episodes) could provide additional context about trajectory trends. Third, the categorical encoding of tic types uses label encoding which assigns arbitrary numeric codes to the 82 unique tic types without capturing semantic similarity. Alternative encoding strategies such as embedding layers that learn low-dimensional representations of tic types, or grouping rare types into broader categories (motor tics, vocal tics) based on clinical taxonomy, could improve the informativeness of type features. Fourth, the dataset contains rich textual information in description fields (free-text episode descriptions) and trigger fields (reported triggers) that our current feature set does not utilize. Natural language processing methods could extract sentiment, specific trigger mentions, or descriptive patterns from these text fields.
 
-**Class Imbalance and Evaluation Challenges.** The high-intensity classification task exhibits 22% positive class prevalence (334 high-intensity episodes among 1,533 total), creating moderate class imbalance that contributes to the low recall observed across all models. While our use of PR-AUC rather than ROC-AUC and emphasis on precision-recall trade-offs acknowledge this imbalance, we did not employ advanced techniques specifically designed to handle imbalanced classification. SMOTE (Synthetic Minority Over-sampling Technique) could generate synthetic high-intensity episodes through interpolation in feature space, balancing the training set and potentially improving recall [21]. Cost-sensitive learning that assigns higher misclassification penalties to false negatives (missed high-intensity episodes) compared to false positives would encourage models to prioritize sensitivity. Class weights could be incorporated into the loss functions of XGBoost and LightGBM to upweight minority class instances during training. Additionally, our evaluation uses a fixed threshold of intensity ≥7 to define high-intensity episodes, but this threshold was chosen based on clinical convention and the 30th percentile cutoff rather than systematic optimization. Alternative thresholds (≥6 or ≥8) might yield different class balance properties and potentially easier or harder prediction tasks.
-
 **User Generalization and Cold Start Problems.** The user engagement distribution is highly skewed, with 77% of participants contributing fewer than 10 episodes while 9% of highly engaged users contribute 50+ episodes. This skew creates two challenges. First, the model performance metrics reported on the test set reflect a mixture of predictions for sparse users (with limited baseline data) and established users (with rich history), potentially masking heterogeneous performance across engagement levels. Stratified analysis by user episode count would provide more nuanced understanding of performance as a function of data availability. Second, the cold start problem—how to provide accurate predictions for brand new users with zero or minimal episode history—remains unaddressed. Our user-grouped train-test split ensures that test users are entirely unseen during training, but all test users have at least one episode in the dataset to establish minimal baseline statistics. In real-world deployment, truly new users would have no historical data, requiring models to fall back on population-level statistics or demographic features (age, disorder subtype) if available. User-specific model fine-tuning after accumulating sufficient data (e.g., after 20 episodes) could improve personalization but was not evaluated in this study.
 
 **Temporal Validation Gaps.** Our primary validation strategy uses user-grouped spatial splitting, where users are randomly assigned to train or test sets. While this approach realistically evaluates generalization to new individuals, it does not assess temporal generalization—whether models trained on data from one time period can accurately predict episodes in a future time period. Tic patterns may exhibit non-stationarity, with intensity distributions or feature-target relationships shifting over time due to seasonal effects, medication changes, or disease progression. A temporal validation split (training on the first 80% of episodes chronologically, testing on the last 20%) would provide complementary evidence about temporal extrapolation ability. The absence of such temporal validation leaves open the possibility that models may fail to generalize across time even if they generalize across users.
@@ -983,19 +845,13 @@ The methodological contributions of this work extend beyond the specific applica
 
 The clinical insights derived from feature importance analysis and prediction pattern examination enhance understanding of tic episode dynamics. The dominance of recent episode intensity as the strongest predictor validates the clinical observation of tic clustering, where episodes tend to occur in bursts with similar intensities rather than as independent events. The strong contribution of weekly aggregation statistics indicates that medium-term trends (experiencing a "bad week") carry information beyond immediate episode history. Conversely, the weak contribution of temporal features (hour, day_of_week) suggests that population-level tic patterns do not follow strong circadian or weekly rhythms, though individual-specific temporal patterns may exist. The success of user-level baseline features confirms substantial between-individual heterogeneity, motivating personalized prediction approaches that adapt to each user's characteristic intensity distribution.
 
-### 8.2 Practical Implications and Deployment Readiness
-
-The best-performing models demonstrate computational efficiency suitable for real-world deployment, with training times under 0.15 seconds on consumer hardware enabling rapid model updates as new episode data accumulates. For intensity prediction, Random Forest provides actionable forecasts that distinguish high-risk periods (predicted intensity 7-10) warranting heightened awareness from low-risk periods (predicted intensity 1-4) suitable for normal activity. **For high-intensity classification, properly calibrated XGBoost achieves two distinct performance profiles depending on deployment context**: (1) user-grouped validation (new patients): 68% precision at 32% recall (F1=0.44, threshold=0.337), prioritizing reliable alerts with moderate sensitivity; (2) temporal validation (patients with history): 96% recall at 28% precision (F1=0.43, threshold=0.02), maximizing episode detection at the cost of more false alarms. The configurable threshold enables user-specific alert sensitivity settings, allowing individuals to choose between high-precision mode (minimizing false alarms for new users) and high-sensitivity mode (maximizing episode detection for established users with sufficient history). A tiered deployment strategy offering temporal models for high-engagement users (50+ episodes) while using user-grouped models for new or sparse users could maximize prediction accuracy across the engagement spectrum.
-
-The models enable proactive interventions through one-episode-ahead predictions providing minutes to hours of warning depending on typical inter-episode intervals. Users experiencing a predicted high-intensity episode could employ coping strategies such as stress reduction techniques, environmental modifications, or consultation with clinicians about medication adjustments. Integration with mobile health applications could deliver personalized alerts, trend visualizations showing recent intensity patterns, and actionable recommendations based on historical triggers and mood associations. Model transparency through explanations highlighting the features driving each prediction would build user trust and facilitate identification of modifiable factors influencing tic patterns.
-
-### 8.3 Future Directions
+### 8.2 Future Directions
 
 Several promising directions for future work emerge from this study's findings and limitations. Immediate priorities include conducting comprehensive hyperparameter search in medium or full mode with 50-100 samples per model, evaluating additional model architectures including ensemble stacking and neural networks, and implementing class balancing techniques such as SMOTE or cost-sensitive learning to improve classification recall. Medium-term priorities include extending predictions to multi-day forecasting and time-to-event prediction, incorporating natural language processing of episode descriptions and triggers, testing alternative time-window sizes and sequence lengths, and performing temporal validation to assess prediction stability over time. Long-term directions include exploring user-specific model fine-tuning for high-engagement individuals, investigating deep learning approaches such as LSTMs or Transformers for sequence modeling, deploying models in real-world pilot studies with clinical outcome evaluation, and extending the framework to related episodic health conditions.
 
 The feature importance analysis suggests specific feature engineering improvements: extending sequence features to capture longer episode histories (5-10 episodes), incorporating multiple time-window sizes (3-day, 14-day, 30-day windows) to capture patterns at different temporal scales, developing better categorical encodings for tic types through embedding or clinical taxonomy-based grouping, and extracting information from textual fields through NLP. User-level personalization could be enhanced through cold-start strategies that blend population and user-specific models as data accumulates, stratified models for different tic disorder subtypes (Tourette syndrome vs. chronic motor tic disorder), and incorporation of external factors such as weather, calendar events, or medication changes when available.
 
-### 8.4 Concluding Remarks
+### 8.3 Concluding Remarks
 
 This work establishes the feasibility and value of machine learning for tic episode prediction, demonstrating significant improvements over baseline approaches through systematic feature engineering, model selection, and proper threshold calibration. Random Forest for intensity prediction (MAE 1.94 user-grouped, MAE 1.46 temporal, up to 27.8% improvement) and **properly calibrated XGBoost for high-intensity classification** represent deployable models ready for real-world pilot testing. The threshold calibration breakthrough—revealing that user-grouped validation (F1=0.44, threshold=0.337, precision=68%, recall=32%) and temporal validation (F1=0.43, threshold=0.02, precision=28%, recall=96%) achieve similar F1 scores but with dramatically different precision-recall tradeoffs—demonstrates the critical importance of proper calibration methodology using dedicated calibration sets to prevent data leakage. The finding that recent episode history and weekly patterns dominate predictive performance while temporal features contribute minimally provides actionable insights for future feature engineering and clinical hypothesis generation. The validated results demonstrate that tic episode patterns contain predictable structure accessible to ensemble machine learning methods.
 
