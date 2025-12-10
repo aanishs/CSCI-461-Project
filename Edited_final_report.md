@@ -560,89 +560,8 @@ XGBoost's slightly inferior performance on regression (MAE 1.99 vs. 1.94) merits
 
 Random Forest's competitive but slightly inferior classification performance (F1=0.33 vs. XGBoost's 0.34) reflects the limitations of bagging for imbalanced classification. While Random Forest's ensemble of diverse trees provides good discrimination (PR-AUC=0.69), the equal weighting of all trees regardless of their focus on difficult minority class instances results in slightly lower precision and F1-score compared to XGBoost's adaptive boosting approach. Notably, Random Forest achieves higher recall (0.26) compared to XGBoost (0.23), suggesting a less conservative prediction strategy with more balanced precision-recall trade-offs. The dramatic underperformance of LightGBM (F1=0.21) despite its algorithmic similarity to XGBoost suggests that GOSS and EFB optimizations, while beneficial for computational efficiency, may sacrifice predictive performance on small to medium-sized datasets like ours where the computational savings are less critical.
 
-### 6.2 Formal Feature Selection Analysis
 
-While feature importance analysis (Section 6.3) ranks features by their contribution to model predictions, formal feature selection methods systematically identify minimal feature subsets that maintain or improve predictive performance. We evaluated four complementary selection methods to determine whether the full 35-feature set is necessary or if a reduced feature set could achieve comparable results with improved interpretability and computational efficiency.
-
-**Feature Selection Methods Evaluated:**
-
-1. **Recursive Feature Elimination (RFE):** Iteratively trains models and removes the least important feature until a target number remains. We used Random Forest as the base estimator, selecting the top 20 features from the original 35.
-
-2. **L1 Regularization (Lasso/Logistic Regression):** Applies L1 penalty to model coefficients, driving less important features to exactly zero. For regression, we used Lasso with α=0.001; for classification, we used L1-penalized Logistic Regression.
-
-3. **Mutual Information:** Computes the mutual information between each feature and the target variable, selecting features with the highest information content. This method is model-agnostic and captures non-linear relationships.
-
-4. **Tree-based Feature Importance:** Uses Random Forest's native feature importance scores (mean decrease in impurity) to rank and select top features.
-
-**Regression Feature Selection Results.** Table 4 presents performance comparison across selection methods for next intensity prediction (MAE as primary metric):
-
-| Method | MAE | N Features | Top 5 Selected Features |
-|--------|-----|------------|------------------------|
-| Baseline (All 35) | 1.98 | 35 | - |
-| RFE | 1.96 | 20 | prev_intensity_1/2/3, window_7d_mean, user_mean |
-| L1 (Lasso) | 1.98 | 33 | prev_intensity_1/2/3, window_7d_mean, user_mean |
-| Mutual Information | **1.94** | 20 | prev_intensity_1, window_7d_mean, prev_intensity_2 |
-| Tree Importance | 1.96 | 20 | prev_intensity_1, window_7d_mean, time_since_prev |
-
-The Mutual Information method achieved the best performance (MAE=1.94 with 20 features), actually outperforming the full 35-feature baseline (MAE=1.98). This 2% improvement with 43% fewer features demonstrates that several of the original features contribute noise rather than signal. RFE and Tree Importance methods achieved MAE=1.96, matching baseline performance with reduced dimensionality. The L1 (Lasso) method retained 33 of 35 features (only eliminating 2), indicating that linear penalties struggle to induce sparsity given the complex non-linear relationships in tic data.
-
-**Classification Feature Selection Results.** Table 5 presents performance for high-intensity prediction (F1-score at calibrated threshold=0.04):
-
-| Method | F1-Score | N Features | Top 5 Selected Features |
-|--------|----------|------------|------------------------|
-| Baseline (All 35) | 0.69 | 35 | - |
-| RFE | **0.70** | 20 | prev_intensity_1/2/3, window_7d_mean, user_mean |
-| L1 (Logistic Reg.) | 0.69 | 35 | All features (no sparsity achieved) |
-| Mutual Information | **0.70** | 20 | window_7d_mean, prev_intensity_1/2, window_7d_high_rate |
-| Tree Importance | 0.69 | 20 | window_7d_mean, prev_intensity_1, window_7d_high_rate |
-
-Both RFE and Mutual Information methods achieved slight improvements (F1=0.70 vs baseline 0.69) with 20 features, confirming that dimensionality reduction can enhance classification performance by removing noisy features that increase model variance. Tree Importance maintained baseline performance, while L1 regularization again failed to induce sparsity.
-
-**Feature Agreement Across Methods.** Examining which features are consistently selected across all methods reveals a core set of highly predictive features:
-
-**Universally Selected Features (appear in all 4 methods):**
-- prev_intensity_1, prev_intensity_2, prev_intensity_3 (sequence features)
-- window_7d_mean_intensity (time-window aggregation)
-- user_mean_intensity (user-level baseline)
-- time_since_prev_hours (temporal gap)
-
-**Frequently Selected Features (appear in 3 of 4 methods):**
-- window_7d_std_intensity, window_7d_high_intensity_rate (time-window statistics)
-- user_std_intensity, user_tic_count (user characteristics)
-- type_encoded, trigger_encoded (categorical features)
-
-**Rarely Selected Features (appear in ≤1 method):**
-- Temporal features: hour, day_of_week, is_weekend, month
-- Interaction features: most mood×time, trigger×type combinations
-- Some engineered features: days_since_high_intensity
-
-The strong agreement across methods validates that a core set of approximately 15-20 features captures the predictive signal, while the remaining 15 features contribute minimal value or introduce noise.
-
-**Recommended Minimal Feature Set.** Based on Mutual Information selection (best regression performance) and cross-validation with the classification task, we recommend the following 20-feature subset for deployment:
-
-**Core Predictive Features (20):**
-- **Sequence (4):** prev_intensity_1, prev_intensity_2, prev_intensity_3, time_since_prev_hours
-- **Time-window (6):** window_7d_mean_intensity, window_7d_std_intensity, window_7d_high_intensity_rate, window_7d_count, window_7d_min, window_7d_max
-- **User-level (4):** user_mean_intensity, user_std_intensity, user_tic_count, user_high_intensity_rate
-- **Categorical (2):** type_encoded, trigger_encoded
-- **Engineered (2):** recent_intensity_volatility, intensity_trend
-- **Temporal (2):** hour, day_of_month (retained for potential individual-level patterns)
-
-**Implications for Deployment.** The feature selection analysis has several practical implications:
-
-1. **Simplified Models:** Reducing from 35 to 20 features decreases model complexity, training time, and memory requirements while maintaining or improving performance.
-
-2. **Interpretability:** A smaller feature set is easier to explain to clinicians and patients, focusing attention on the most impactful factors (recent episode history, weekly patterns, and individual baselines).
-
-3. **Data Collection Efficiency:** Deployment systems can prioritize collecting high-value features (sequence, time-window, user stats) while deprioritizing low-value features (specific temporal patterns, complex interactions).
-
-4. **Robustness:** Removing noisy features reduces overfitting risk and improves model generalization to new users and time periods.
-
-5. **Feature Engineering Guidance:** Future work should focus on refining the core feature categories (sequence, time-window, user-level) rather than expanding into additional temporal or interaction features that show weak selection rates.
-
-The convergence of multiple selection methods on the same core features provides strong evidence that prev_intensity_1/2/3, window_7d_mean_intensity, and user_mean_intensity constitute the essential predictive substrate for tic episode forecasting.
-
-### 6.3 Feature Importance Analysis
+### 6.2 Feature Importance Analysis
 
 Understanding which features contribute most strongly to predictive performance provides both validation of our feature engineering approach and clinical insights into the factors that drive tic episode patterns. We extracted feature importance scores from the best Random Forest (regression) and XGBoost (classification) models using each algorithm's native importance calculation method (mean decrease in impurity for Random Forest, gain-based importance for XGBoost).
 
@@ -726,7 +645,7 @@ To complement standard feature importance metrics with instance-level explanatio
 | 10 | prev_type_1_encoded | 0.041 | intensity_trend | 0.159 |
 
 
-### 6.2 Prediction Patterns and Clinical Implications
+### 6.3 Prediction Patterns and Clinical Implications
 
 To understand how the models operate in practice and identify scenarios where predictions succeed or fail, we analyzed prediction patterns on the test set and visualized model behavior through time-series predictions.
 
@@ -779,7 +698,7 @@ Alert notifications require thoughtful design to be actionable rather than anxie
 
 This comprehensive deployment framework transforms the experimentally validated prediction models into a practical, privacy-preserving, user-centered clinical decision support system ready for real-world implementation and iterative improvement based on user feedback and longitudinal performance monitoring.
 
-### 6.5 Systematic Error Analysis
+### 6.4 Systematic Error Analysis
 
 To identify conditions under which models succeed or fail and guide targeted improvements, we conducted stratified error analysis across four dimensions: user engagement level, intensity range, tic type frequency, and time of day [45].
 
