@@ -413,10 +413,6 @@ Figure 11 compares test set F1-scores across all three models under user-grouped
 ![Confusion Matrix - XGBoost (User-Grouped)](report_figures/fig9_confusion_matrix.png)
 *Figure 13: Confusion matrix heatmap for XGBoost classification on test set under user-grouped validation (277 episodes from 18 unseen users). The model correctly identifies 197/217 low-intensity episodes (true negatives) but only 13/60 high-intensity episodes (true positives), demonstrating the precision-recall trade-off. Color intensity indicates count magnitude.*
 
-**Threshold Calibration Results.** To enable optimal clinical deployment, we applied the proper threshold calibration methodology described in Section 4.4. Using a dedicated calibration set (20% of training data), we identified the threshold that maximizes F1-score without test set leakage. The calibrated threshold (0.337) achieved test F1=0.44 with 68% precision and 32% recall, representing a **155% improvement** over the default threshold performance (F1=0.17). While recall is moderate (32%), the high precision (68%) minimizes false alarms for new patients without tracking history. Figure 15 presents precision-recall and ROC curves across all threshold values.
-
-![PR and ROC Curves (User-Grouped)](report_figures/fig19_20_pr_roc_curves.png)
-*Figure 15: Precision-Recall curve (left) and ROC curve (right) for XGBoost classification across all decision thresholds under user-grouped validation. The PR curve shows the trade-off between precision and recall, with the calibrated F1-score point marked (threshold=0.337, F1=0.44, precision=68%, recall=32%). The ROC curve demonstrates strong discrimination (AUC=0.85) between high and low-intensity episodes.*
 
 #### 5.2.2 Temporal Validation Results
 
@@ -426,30 +422,12 @@ This dramatic improvement parallels the regression findings and reinforces the c
 
 #### 5.2.3 Validation Strategy Comparison and Interpretation
 
-**Temporal vs. User-Grouped Performance.** Comparing the default threshold performance between validation strategies reveals an interesting pattern:
-- **User-grouped (threshold=0.5)**: Precision=0.66, Recall=0.23, F1=0.34 — Model is very conservative
-- **Temporal (threshold=0.5)**: Precision=0.32, Recall=0.33, F1=0.32 — Model is more balanced but lower overall performance
-
-The default threshold temporal performance (F1=0.32) is actually slightly worse than user-grouped (F1=0.34) at the same threshold, despite temporal validation having access to patient history. This counterintuitive finding suggests that the model's probability calibration may be affected by the temporal split characteristics (e.g., class imbalance differences between training and test periods). However, with proper threshold optimization, temporal validation achieves superior F1=0.43 compared to user-grouped F1=0.34.
-As shown in Figure 8 (from Section 4.6), temporal validation achieves superior performance across both regression (24.7% lower MAE) and classification (83% higher F1) tasks, with the classification improvement being especially dramatic.
-
 **Precision-Recall Tradeoffs Across Validation Strategies.** A comprehensive comparison of precision-recall characteristics across both validation strategies and threshold configurations reveals distinct operating points optimized for different deployment scenarios:
 
 - **User-Grouped (threshold=0.5)**: Precision=0.59, Recall=0.10, F1=0.17 — Very low sensitivity
 - **User-Grouped (calibrated threshold=0.337)**: Precision=0.68, Recall=0.32, F1=0.44 — Balanced, prioritizing precision
 - **Temporal (threshold=0.5)**: Precision=0.32, Recall=0.33, F1=0.32 — Balanced but suboptimal
 - **Temporal (calibrated threshold=0.02)**: Precision=0.28, Recall=0.96, F1=0.43 — Very aggressive, maximizing recall
-
-
-**Summary of Classification Findings.** XGBoost is the recommended model for high-intensity episode classification across both validation scenarios. Proper threshold calibration using dedicated calibration sets reveals distinct performance profiles:
-
-**User-Grouped Validation (new patients):**
-- Default threshold (0.5): F1=0.17, Precision=0.59, Recall=0.10 — Very poor sensitivity
-- **Calibrated threshold (0.337): F1=0.44, Precision=0.68, Recall=0.32** — Balanced precision-recall (155% improvement)
-
-**Temporal Validation (known patients):**
-- Default threshold (0.5): F1=0.32, Precision=0.32, Recall=0.33 — Suboptimal across metrics
-- **Calibrated threshold (0.02): F1=0.43, Precision=0.28, Recall=0.96** — Maximum recall (34% improvement)
 
 **Key Insights:**
 1. **Threshold calibration is essential**: Default thresholds (0.5) yield poor performance, especially for user-grouped validation (F1=0.17). Proper calibration using dedicated calibration sets yields 34-155% improvements while ensuring results will generalize to deployment.
@@ -468,28 +446,28 @@ As shown in Figure 8 (from Section 4.6), temporal validation achieves superior p
 **Statistical Significance Testing.** To confirm that the observed improvements over baseline predictors represent genuine predictive signal rather than random chance, we conducted bootstrap confidence interval analysis and paired t-tests comparing model predictions to baseline approaches. Figure 24 presents the results of 1,000-bootstrap resampling for MAE improvement and classification metrics.
 
 ![Statistical Significance](report_figures/fig24_statistical_significance.png)
-*Figure 24: Statistical significance testing results. Left panel shows bootstrap distribution of MAE improvement over baseline (mean 26.8% reduction, 95% CI [23.1%, 30.2%]). Middle panel displays paired t-test results (p < 0.0001 for both regression and classification improvements). Right panel shows bootstrap F1-score distribution (note: this analysis predates the proper calibration methodology and should be re-run with threshold=0.337).*
+*Figure 14: Statistical significance testing results. Left panel shows bootstrap distribution of MAE improvement over baseline (mean 26.8% reduction, 95% CI [23.1%, 30.2%]). Middle panel displays paired t-test results (p < 0.0001 for both regression and classification improvements). Right panel shows bootstrap F1-score distribution (note: this analysis predates the proper calibration methodology and should be re-run with threshold=0.337).*
 
 The bootstrap analysis confirms that Random Forest achieves **26.8% MAE reduction** compared to the global mean baseline, with 95% confidence interval [23.1%, 30.2%] and p-value < 0.0001. For classification, the properly calibrated XGBoost classifier (threshold=0.337) achieves F1=0.44 with 68% precision and 32% recall, representing a 155% improvement over the default threshold (F1=0.17). Note that the bootstrap confidence intervals shown in Figure 24 used an exploratory threshold and should be re-computed with the properly calibrated threshold. These results provide strong statistical evidence that the models capture genuine predictive patterns rather than overfitting to noise.
 
 **Per-User Performance Stratification.** To understand how prediction quality varies across users with different engagement levels, we stratified test set performance by user episode count. Figure 23 shows regression MAE and classification F1 across three engagement tiers: Sparse (1-9 episodes), Medium (10-49 episodes), and High (50+ episodes).
 
 ![Per-User Performance](report_figures/fig23_per_user_performance.png)
-*Figure 16: Performance stratification by user engagement level. Left panel shows regression MAE decreasing from 2.91 (sparse users) to 1.95 (high-engagement users) as more historical data enables better baseline estimation. Right panel shows threshold-optimized classification F1 improving across all tiers, with 160% average improvement over default threshold across engagement levels.*
+*Figure 15: Performance stratification by user engagement level. Left panel shows regression MAE decreasing from 2.91 (sparse users) to 1.95 (high-engagement users) as more historical data enables better baseline estimation. Right panel shows threshold-optimized classification F1 improving across all tiers, with 160% average improvement over default threshold across engagement levels.*
 
 The analysis reveals expected performance gradients: sparse users (1-9 episodes) achieve MAE of 2.91, compared to 2.15 for medium users and 1.95 for high-engagement users. This 33% improvement from sparse to high-engagement demonstrates the critical role of user-specific baseline features (user_mean_intensity, user_std_intensity) that require sufficient historical data for accurate estimation. Notably, threshold optimization benefits all engagement tiers, with F1 improvements of 155%, 162%, and 163% for sparse, medium, and high-engagement users respectively.
 
-**Learning Curves and Sample Efficiency.** Figure 21 presents learning curves showing model performance as a function of training set size for temporal-grouped validation, revealing how much data is required for effective learning and whether additional data would yield further improvements.
+**Learning Curves and Sample Efficiency.** Figure 16 presents learning curves showing model performance as a function of training set size for temporal-grouped validation, revealing how much data is required for effective learning and whether additional data would yield further improvements.
 
 ![Learning Curves](report_figures/fig21_learning_curves.png)
-*Figure 21: Learning curves for regression (left) and classification (right) tasks. Solid lines show training performance, dashed lines show validation performance. Shaded regions indicate standard deviation across cross-validation folds. Both tasks show continued improvement with additional training data, suggesting that larger datasets could yield further performance gains.*
+*Figure 16: Learning curves for regression (left) and classification (right) tasks. Solid lines show training performance, dashed lines show validation performance. Shaded regions indicate standard deviation across cross-validation folds. Both tasks show continued improvement with additional training data, suggesting that larger datasets could yield further performance gains.*
 
 The learning curves show that both regression MAE and classification F1 continue to improve with increasing training set size, with no clear plateau visible even at the full 1,200-episode training set. The gap between training and validation curves narrows at larger sample sizes, indicating reduced overfitting. These findings suggest that collecting additional data—either from existing users accumulating more episodes or recruiting new participants—would likely yield measurable performance improvements, particularly for classification where the minority class (high-intensity episodes) benefits from more positive examples.
 
 **Calibration Analysis.** Well-calibrated probability estimates are essential for clinical deployment, ensuring that a predicted 70% probability of high-intensity corresponds to approximately 70% empirical frequency. Figure 22 presents calibration plots comparing predicted probabilities to observed frequencies.
 
 ![Calibration Plot](report_figures/fig22_calibration_plot.png)
-*Figure 22: Calibration plot for XGBoost classification probabilities. Points represent binned predictions, with perfect calibration falling on the diagonal line. Histogram shows distribution of predicted probabilities. XGBoost demonstrates good calibration in the 10-40% probability range where most predictions fall, with minor overconfidence in the 50-80% range.*
+*Figure 17: Calibration plot for XGBoost classification probabilities. Points represent binned predictions, with perfect calibration falling on the diagonal line. Histogram shows distribution of predicted probabilities. XGBoost demonstrates good calibration in the 10-40% probability range where most predictions fall, with minor overconfidence in the 50-80% range.*
 
 XGBoost shows generally good calibration, with predicted probabilities closely tracking observed frequencies in the critical 10-40% range where most predictions concentrate. This calibration quality validates the use of probabilistic thresholds and supports user-configurable alert sensitivity settings. Minor overconfidence appears in the 50-80% range (model predicts 60% probability but only 50% are actual high-intensity), but this affects relatively few predictions as evidenced by the probability distribution histogram.
 
@@ -510,8 +488,6 @@ Table 2 presents complete regression results across all models and metrics under
 | *Baseline (User Mean)* | - | - | 2.562 | 3.087 | ~2.40 | ~6% | - |
 
 *Best performance in each column shown in bold. Random Forest achieves lowest MAE under both validation strategies: 1.94 (user-grouped, new patients) and 1.46 (temporal, known patients), representing 27.8% improvement over global mean baseline for user-grouped and 45.6% improvement for temporal. The 24.7% temporal improvement demonstrates that patient-specific historical data is the dominant driver of predictive accuracy. All training performed in under 0.1 seconds.*
-
-**Note on Validation Strategies:** User-grouped validation tests generalization to completely new patients never seen during training (Section 4.5), while temporal validation tests generalization to future time periods for patients with existing history using August 1, 2025 cutoff (Section 4.6). Temporal validation consistently achieves 20-25% better performance across all models, confirming that tic patterns are more stable within individuals over time than across different individuals.
 
 Table 3 presents complete classification results under both validation strategies with both default and calibrated thresholds, highlighting the critical importance of threshold optimization for clinical deployment.
 
@@ -549,10 +525,10 @@ Random Forest's competitive but slightly inferior classification performance (F1
 
 Understanding which features contribute most strongly to predictive performance provides both validation of our feature engineering approach and clinical insights into the factors that drive tic episode patterns. We extracted feature importance scores from the best Random Forest (regression) and XGBoost (classification) models using each algorithm's native importance calculation method (mean decrease in impurity for Random Forest, gain-based importance for XGBoost).
 
-Figure 17 presents a side-by-side comparison of the top 10 most important features for both models. The feature importance analysis reveals striking consistency across the two tasks, with sequence-based and time-window features dominating both models while temporal and categorical features contribute minimally.
+Figure 18 presents a side-by-side comparison of the top 10 most important features for both models. The feature importance analysis reveals striking consistency across the two tasks, with sequence-based and time-window features dominating both models while temporal and categorical features contribute minimally.
 
 ![Feature Importance Comparison](report_figures/fig16_feature_importance_comparison.png)
-*Figure 17: Comparative feature importance for Random Forest regression (left) and XGBoost classification (right). Both models identify prev_intensity_1 (most recent episode) and window_7d_mean_intensity (weekly average) as the two most important features, collectively accounting for ~30% of model importance. Sequence features (prev_intensity_1/2/3) and time-window statistics (window_7d_mean, window_7d_std) dominate, while temporal features (hour, day_of_week) show minimal contribution.*
+*Figure 18: Comparative feature importance for Random Forest regression (left) and XGBoost classification (right). Both models identify prev_intensity_1 (most recent episode) and window_7d_mean_intensity (weekly average) as the two most important features, collectively accounting for ~30% of model importance. Sequence features (prev_intensity_1/2/3) and time-window statistics (window_7d_mean, window_7d_std) dominate, while temporal features (hour, day_of_week) show minimal contribution.*
 
 **Sequence Features Dominate.** The single most important feature for both tasks is prev_intensity_1, the intensity of the most recent tic episode, accounting for approximately 18% of XGBoost's importance and 15% of Random Forest's importance. This finding validates the strong Markovian property of tic sequences: the best predictor of the next episode is the current episode. The second and third most recent intensities (prev_intensity_2 and prev_intensity_3) also rank highly, each contributing 9-12% importance, indicating that patterns over the last three episodes provide substantial predictive signal. The cumulative importance of these three sequence features exceeds 35% for both models, demonstrating that short-term recent history is the dominant driver of predictions. This aligns with clinical observations that tic episodes often occur in clusters, where a high-intensity tic may trigger subsequent episodes or reflect an underlying elevated tic state that persists across multiple episodes.
 
@@ -570,11 +546,11 @@ To complement standard feature importance metrics with instance-level explanatio
 
 **Methodology.** We computed SHAP values for a random sample of 500 test instances using TreeExplainer, an optimized algorithm for tree-based models that leverages the tree structure to compute exact Shapley values efficiently. For regression (Random Forest), SHAP values indicate each feature's contribution (in intensity units) to the predicted value relative to the expected baseline prediction. For classification (XGBoost), SHAP values represent log-odds contributions to the probability of high-intensity episodes.
 
-**Regression SHAP Analysis.** Figure 27 presents two complementary SHAP visualizations for regression. The bar plot (top) shows mean absolute SHAP values, indicating overall feature importance consistent with but more nuanced than traditional importance scores. The beeswarm plot (bottom) displays individual SHAP values for each feature and instance, with color indicating feature value (red=high, blue=low) and x-position showing SHAP value magnitude.
+**Regression SHAP Analysis.** Figure 19 presents two complementary SHAP visualizations for regression. The bar plot (top) shows mean absolute SHAP values, indicating overall feature importance consistent with but more nuanced than traditional importance scores. The beeswarm plot (bottom) displays individual SHAP values for each feature and instance, with color indicating feature value (red=high, blue=low) and x-position showing SHAP value magnitude.
 
 ![SHAP Regression Summary](report_figures/fig30_shap_regression_bar.png)
 ![SHAP Regression Beeswarm](report_figures/fig31_shap_regression_beeswarm.png)
-*Figures 27-28: SHAP summary plots for Random Forest regression. Top (bar plot): Mean absolute SHAP values confirm prev_intensity_1 and window_7d_mean_intensity as dominant features. Bottom (beeswarm plot): Individual SHAP values reveal that high values of prev_intensity_1 (red points) consistently push predictions higher (positive SHAP), while low values (blue points) push predictions lower (negative SHAP), demonstrating strong positive relationship.*
+*Figures 19-20: SHAP summary plots for Random Forest regression. Top (bar plot): Mean absolute SHAP values confirm prev_intensity_1 and window_7d_mean_intensity as dominant features. Bottom (beeswarm plot): Individual SHAP values reveal that high values of prev_intensity_1 (red points) consistently push predictions higher (positive SHAP), while low values (blue points) push predictions lower (negative SHAP), demonstrating strong positive relationship.*
 
 **Key SHAP Regression Findings:**
 - **prev_intensity_1** shows mean absolute SHAP value of 0.775, dominating all other features with strong directional consistency: higher recent intensity increases future intensity predictions (positive correlation).
@@ -582,11 +558,11 @@ To complement standard feature importance metrics with instance-level explanatio
 - **prev_intensity_2** and **prev_intensity_3** show progressively decreasing SHAP values (0.145, 0.093), confirming that influence decays with temporal distance but remains meaningful for up to three episodes back.
 - **Feature interactions visible**: Some instances with low prev_intensity_1 (blue points) still receive positive SHAP values due to high window_7d_mean values, demonstrating that models combine recent history with weekly trends to handle cases where the immediate previous episode may not be representative.
 
-**Classification SHAP Analysis.** Figure 29 presents SHAP analysis for XGBoost high-intensity classification, revealing different feature importance patterns for binary prediction versus regression.
+**Classification SHAP Analysis.** Figure 20 presents SHAP analysis for XGBoost high-intensity classification, revealing different feature importance patterns for binary prediction versus regression.
 
 ![SHAP Classification Summary](report_figures/fig33_shap_classification_bar.png)
 ![SHAP Classification Beeswarm](report_figures/fig34_shap_classification_beeswarm.png)
-*Figures 29-30: SHAP summary plots for XGBoost classification. Top: window_7d_mean_intensity dominates classification importance (SHAP=1.649), surpassing prev_intensity_1 (SHAP=0.420). Bottom: High window_7d_mean (red points) strongly increases high-intensity probability (large positive SHAP), while low values decrease probability (negative SHAP), showing asymmetric threshold-driven behavior.*
+*Figures 20-21: SHAP summary plots for XGBoost classification. Top: window_7d_mean_intensity dominates classification importance (SHAP=1.649), surpassing prev_intensity_1 (SHAP=0.420). Bottom: High window_7d_mean (red points) strongly increases high-intensity probability (large positive SHAP), while low values decrease probability (negative SHAP), showing asymmetric threshold-driven behavior.*
 
 **Key SHAP Classification Findings:**
 - **window_7d_mean_intensity** emerges as the dominant classifier (SHAP=1.649), more than triple prev_intensity_1 (SHAP=0.420). This reveals that **weekly context matters more for binary thresholding** than for continuous intensity prediction—users in a "bad week" are far more likely to experience high-intensity episodes regardless of immediate previous intensity.
@@ -594,12 +570,12 @@ To complement standard feature importance metrics with instance-level explanatio
 - **time_since_prev_hours** contributes meaningfully to classification (SHAP=0.315), indicating that episode spacing influences high-intensity risk—episodes occurring soon after previous ones may be more likely to exceed the threshold.
 - **Threshold effects observed**: The classification beeswarm shows more categorical separation (red points in positive region, blue in negative) compared to regression's continuous gradient, consistent with classification's threshold-based decision boundary.
 
-**SHAP Force Plots for Individual Predictions.** To illustrate how features combine for specific predictions, Figure 31 presents force plots for three representative instances: a correctly predicted low-intensity episode, a correctly predicted high-intensity episode, and a misclassification.
+**SHAP Force Plots for Individual Predictions.** To illustrate how features combine for specific predictions, Figure 22 presents force plots for three representative instances: a correctly predicted low-intensity episode, a correctly predicted high-intensity episode, and a misclassification.
 
 ![SHAP Force Plots](report_figures/fig32_shap_force_low.png)
 ![SHAP Force Plots](report_figures/fig32_shap_force_medium.png)
 ![SHAP Force Plots](report_figures/fig32_shap_force_high.png)
-*Figures 31-33: SHAP force plots showing how features combine for individual predictions. Each plot shows the base value (expected prediction), feature contributions (red arrows increase, blue arrows decrease prediction), and final predicted value. Low-intensity predictions are dominated by low prev_intensity values, medium predictions show balanced contributions, and high-intensity predictions are driven by elevated window_7d_mean and recent prev_intensity values.*
+*Figures 22-24: SHAP force plots showing how features combine for individual predictions. Each plot shows the base value (expected prediction), feature contributions (red arrows increase, blue arrows decrease prediction), and final predicted value. Low-intensity predictions are dominated by low prev_intensity values, medium predictions show balanced contributions, and high-intensity predictions are driven by elevated window_7d_mean and recent prev_intensity values.*
 
 **SHAP-Derived Clinical Insights:**
 1. **Weekly patterns outweigh instantaneous factors** for high-intensity risk: A user experiencing elevated weekly intensity is at high risk even if their most recent episode was mild.
@@ -607,9 +583,9 @@ To complement standard feature importance metrics with instance-level explanatio
 3. **User baselines matter consistently**: user_mean_intensity appears in top 10 for both tasks, personalizing predictions to individual severity levels.
 4. **Time-since-previous moderates risk**: Closely spaced episodes increase high-intensity probability, supporting cluster-based intervention strategies.
 
-**SHAP Methodology Validation:** The consistency between SHAP importance rankings (Table 6) and traditional feature importance confirms that our models are learning interpretable patterns rather than exploiting spurious correlations. The directional relationships (high prev_intensity → high predictions) align with clinical intuition, providing confidence that models can be safely deployed with predictable behavior.
+**SHAP Methodology Validation:** The consistency between SHAP importance rankings (Table 4) and traditional feature importance confirms that our models are learning interpretable patterns rather than exploiting spurious correlations. The directional relationships (high prev_intensity → high predictions) align with clinical intuition, providing confidence that models can be safely deployed with predictable behavior.
 
-**Table 6: Top 10 Features by Mean Absolute SHAP Value**
+**Table 4: Top 10 Features by Mean Absolute SHAP Value**
 
 | Rank | Regression Feature | SHAP Value | Classification Feature | SHAP Value |
 |------|-------------------|------------|----------------------|------------|
@@ -629,10 +605,10 @@ To complement standard feature importance metrics with instance-level explanatio
 
 To understand how the models operate in practice and identify scenarios where predictions succeed or fail, we analyzed prediction patterns on the test set and visualized model behavior through time-series predictions.
 
-Figure 18 presents a time-series visualization showing how Random Forest predicts future tic episode intensities for a representative test user. The model is trained on the user's first 40 episodes and then predicts each subsequent episode using only features derived from past observations, simulating real-world deployment where future data is unavailable.
+Figure 25 presents a time-series visualization showing how Random Forest predicts future tic episode intensities for a representative test user. The model is trained on the user's first 40 episodes and then predicts each subsequent episode using only features derived from past observations, simulating real-world deployment where future data is unavailable.
 
 ![Time-Series Prediction Visualization](report_figures/fig17_timeseries_prediction.png)
-*Figure 18: Time-series prediction visualization for a representative test user. Blue points show actual reported intensities, red line shows model predictions, and orange shaded region represents ±1.94 MAE uncertainty band (95% confidence interval). The model captures general trends and intensity clusters but shows larger errors for sudden spikes and outlier intensities (9-10). The horizontal red dashed line at intensity=7 marks the high-intensity threshold used for classification.*
+*Figure 25: Time-series prediction visualization for a representative test user. Blue points show actual reported intensities, red line shows model predictions, and orange shaded region represents ±1.94 MAE uncertainty band (95% confidence interval). The model captures general trends and intensity clusters but shows larger errors for sudden spikes and outlier intensities (9-10). The horizontal red dashed line at intensity=7 marks the high-intensity threshold used for classification.*
 
 **Prediction Behavior.** The time-series visualization reveals several consistent patterns in model performance. First, the model successfully captures the general trajectory of intensity fluctuations, with predictions closely tracking actual intensities during periods of stable or gradually changing patterns (episodes 50-80). The orange uncertainty band (±1.94 MAE) encompasses the majority of actual intensities, indicating well-calibrated prediction intervals that accurately reflect model uncertainty. Second, the model responds adaptively to intensity changes, adjusting predictions upward following high-intensity episodes and downward following low-intensity episodes. This responsiveness stems from the strong influence of prev_intensity_1 and window_7d_mean_intensity features that update with each new observation. Third, the model exhibits conservative behavior during extreme values, predicting intensities that regress toward the user's mean rather than fully matching outlier intensities of 9-10. This regression to the mean is a fundamental property of predictive models that balance bias and variance, and reflects the inherent unpredictability of extreme events.
 
