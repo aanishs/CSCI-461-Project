@@ -479,13 +479,13 @@ Table 2 presents complete regression results across all models and metrics under
 
 **Table 2: Complete Regression Results (Target 1: Next Intensity)**
 
-| Model | Train MAE | Train RMSE | **User-Grouped Test MAE** | **User-Grouped Test RMSE** | **Temporal Test MAE** | Temporal Improvement | Training Time (s) |
-|-------|-----------|------------|----------|----------|-----------|---------|---------|---------|-------------------|
-| **Random Forest** | **1.8965** | 2.4632 | **1.9377** | **2.5122** | **0.0809** | **1.4584** | **24.7%** | 0.0487 |
-| XGBoost | 1.9234 | 2.4889 | 1.9887 | 2.5630  ~1.50 | ~24% | 0.0794 |
-| LightGBM | 1.9187 | 2.4821 | 1.9919 | 2.5665 | ~1.50 | ~25% | 0.0512 |
-| *Baseline (Global Mean)* | - | - | 2.685 | 3.214 | 2.685 | 0% | - |
-| *Baseline (User Mean)* | - | - | 2.562 | 3.087 | ~2.40 | ~6% | - |
+| Model                     | Train MAE | Train RMSE | **User-Grouped Test MAE** | **User-Grouped Test RMSE** | **Temporal Test MAE** | Temporal Improvement | Training Time (s) |
+|---------------------------|-----------|------------|----------------------------|-----------------------------|------------------------|-----------------------|--------------------|
+| **Random Forest**         | **1.8965** | **2.4632** | **1.9377**                 | **2.5122**                  | **0.0809**             | **24.7%**             | 1.4584             |
+| XGBoost                   | 1.9234    | 2.4889     | 1.9887                     | 2.5630                      | ~1.50                  | ~24%                  | 0.0794             |
+| LightGBM                  | 1.9187    | 2.4821     | 1.9919                     | 2.5665                      | ~1.50                  | ~25%                  | 0.0512             |
+| *Baseline (Global Mean)*  | -         | -          | 2.685                      | 3.214                       | 2.685                  | 0%                    | -                  |
+| *Baseline (User Mean)*    | -         | -          | 2.562                      | 3.087                       | ~2.40                  | ~6%                   | -                  |
 
 *Best performance in each column shown in bold. Random Forest achieves lowest MAE under both validation strategies: 1.94 (user-grouped, new patients) and 1.46 (temporal, known patients), representing 27.8% improvement over global mean baseline for user-grouped and 45.6% improvement for temporal. The 24.7% temporal improvement demonstrates that patient-specific historical data is the dominant driver of predictive accuracy. All training performed in under 0.1 seconds.*
 
