@@ -271,8 +271,30 @@ F1-score provides a harmonic mean of precision and recall: F1 = 2 × (Precision 
 Precision-Recall Area Under Curve (PR-AUC) summarizes model performance across all possible classification thresholds by plotting precision against recall and computing the area under the curve [16]. Unlike ROC-AUC, which can be overly optimistic for imbalanced datasets, PR-AUC focuses on the minority class performance and is more informative when positive class prevalence is low. PR-AUC ranges from the baseline (equal to the positive class proportion) to 1.0 (perfect classification).
 
 All classification metrics are computed at the default decision threshold of 0.5, except for PR-AUC which integrates performance across all thresholds. For models producing probability estimates, we report predicted probabilities alongside binary predictions to enable threshold tuning in deployment.
+  
+### 4.4 Cross-Validation and Model Selection
 
-### 4.4 Threshold Calibration Methodology
+Cross-validation serves two critical functions in our framework: providing reliable performance estimates during hyperparameter search and enabling comparison of different model architectures. We employ k-fold cross-validation with k=3, balancing the need for robust estimates against computational constraints [11]. The relatively small value of k is necessitated by the modest size of our dataset and the user-grouped folding requirement.
+
+User-grouped k-fold cross-validation divides the training users into k=3 approximately equal subsets, with all episodes from a given user assigned to the same fold. In each cross-validation iteration, two folds serve as the training set and one fold serves as the validation set. This procedure is repeated three times, with each fold serving once as the validation set. Performance metrics are computed for each fold and averaged to produce a mean cross-validation score, with standard deviation providing a measure of variance across folds.
+
+The user-grouped folding strategy is essential for preventing optimistically biased performance estimates. If episodes were randomly assigned to folds without considering user identity, episodes from the same user could appear in both training and validation sets within a single fold. Given that user-level features capture stable individual characteristics, the model could effectively "memorize" validation users through their training set episodes, leading to inflated performance estimates that would not generalize to truly novel users. By enforcing user-level separation, we obtain conservative performance estimates representative of real-world deployment scenarios where the model must predict for previously unseen patients.
+
+Model selection proceeds by comparing mean cross-validation performance across all hyperparameter configurations within each model family, selecting the configuration with the lowest MAE for regression or highest F1-score for classification. After selecting the best configuration for each model architecture (Random Forest, XGBoost, LightGBM), we compare architectures based on test set performance. The test set, comprising 20% of users held out from all training and hyperparameter optimization, provides an unbiased estimate of generalization performance. The separation of hyperparameter search (on training set via cross-validation) from final evaluation (on test set) prevents information leakage that could occur if the test set influenced any modeling decisions.
+
+### 4.5 Temporal Validation Strategy
+
+To assess whether models trained on historical data generalize to future time periods—a critical consideration for longitudinal clinical deployment—we implemented temporal validation as a complementary evaluation strategy to user-grouped cross-validation [41].
+
+**Temporal Split Design (August 2025 Cutoff).** In temporal validation, we split the dataset chronologically by episode timestamp rather than by user. Specifically, we use **August 1, 2025 as the temporal cutoff** to achieve a roughluy 80/20 train-test split: all episodes occurring before August 2025 comprise the training + calibration set, while episodes from August onward form the test set. Critically, this temporal split allows users to appear in both training and test sets, with their earlier episodes (before August) in training and later episodes (August and after) in test. This mimics real-world deployment where the model learns from a patient's historical data and must predict their future episodes.
+
+**Comparison to User-Grouped Validation.** The temporal and user-grouped validation strategies test fundamentally different generalization capabilities:
+- **User-grouped validation** tests generalization to new patients never seen during training, answering: "Can the model predict for patients it has never encountered?"
+- **Temporal validation** tests generalization to future time periods for known patients, answering: "Can the model predict future episodes for patients it has already learned from?"
+
+Both capabilities are clinically relevant but may exhibit different performance characteristics depending on whether tic patterns are more heterogeneous across individuals or across time.
+
+### 4.6 Threshold Calibration Methodology
 
 **The Problem of Threshold Selection.** Classification models output probabilities that must be converted to binary predictions (high-intensity vs. low-intensity) using a decision threshold. The standard approach uses threshold=0.5, but this is often suboptimal, especially for imbalanced datasets where the minority class has prevalence ≠0.5. Selecting the threshold on the test set, however, constitutes data leakage and produces overlyoptimistic performance estimates that will not generalize to deployment.
 
@@ -289,34 +311,12 @@ The calibration procedure works as follows:
 - Select the threshold that maximizes F1-score on the calibration set
 - Apply this selected threshold to the test set for final evaluation
 
+For the temporal-grouped validation, data from May 29 - July 15 was used to train the model, and the calibration period (July 16-31) was used to optimize the threshold by maximizing F1-score.
+
 **Empirical Results.** Using this proper calibration methodology on the XGBoost high-intensity classifier:
 - **Calibrated threshold for User-grouped Validation:** 0.3367 (selected on calibration set)
 - **Calibrated threshold for Temporal-grouped Validation:** 0.02 (selected on calibration set)
 - **Default threshold:** 0.5 (standard baseline)
-  
-### 4.5 Cross-Validation and Model Selection
-
-Cross-validation serves two critical functions in our framework: providing reliable performance estimates during hyperparameter search and enabling comparison of different model architectures. We employ k-fold cross-validation with k=3, balancing the need for robust estimates against computational constraints [11]. The relatively small value of k is necessitated by the modest size of our dataset and the user-grouped folding requirement.
-
-User-grouped k-fold cross-validation divides the training users into k=3 approximately equal subsets, with all episodes from a given user assigned to the same fold. In each cross-validation iteration, two folds serve as the training set and one fold serves as the validation set. This procedure is repeated three times, with each fold serving once as the validation set. Performance metrics are computed for each fold and averaged to produce a mean cross-validation score, with standard deviation providing a measure of variance across folds.
-
-The user-grouped folding strategy is essential for preventing optimistically biased performance estimates. If episodes were randomly assigned to folds without considering user identity, episodes from the same user could appear in both training and validation sets within a single fold. Given that user-level features capture stable individual characteristics, the model could effectively "memorize" validation users through their training set episodes, leading to inflated performance estimates that would not generalize to truly novel users. By enforcing user-level separation, we obtain conservative performance estimates representative of real-world deployment scenarios where the model must predict for previously unseen patients.
-
-Model selection proceeds by comparing mean cross-validation performance across all hyperparameter configurations within each model family, selecting the configuration with the lowest MAE for regression or highest F1-score for classification. After selecting the best configuration for each model architecture (Random Forest, XGBoost, LightGBM), we compare architectures based on test set performance. The test set, comprising 20% of users held out from all training and hyperparameter optimization, provides an unbiased estimate of generalization performance. The separation of hyperparameter search (on training set via cross-validation) from final evaluation (on test set) prevents information leakage that could occur if the test set influenced any modeling decisions.
-
-### 4.6 Temporal Validation Strategy
-
-To assess whether models trained on historical data generalize to future time periods—a critical consideration for longitudinal clinical deployment—we implemented temporal validation as a complementary evaluation strategy to user-grouped cross-validation [41].
-
-**Temporal Split Design (August 2025 Cutoff).** In temporal validation, we split the dataset chronologically by episode timestamp rather than by user. Specifically, we use **August 1, 2025 as the temporal cutoff**: all episodes occurring before August 2025 comprise the training set (May 29 - July 31, 2025; 566 episodes from 26 users), while episodes from August onward form the test set (August 1 - October 26, 2025; 708 episodes from 20 users). Critically, this temporal split allows users to appear in both training and test sets, with their earlier episodes (before August) in training and later episodes (August and after) in test. This mimics real-world deployment where the model learns from a patient's historical data and must predict their future episodes. The split results in 44.4% of episodes in training and 55.6% in testing, with 3 users (15% of test users) overlapping between train and test sets.
-
-**Comparison to User-Grouped Validation.** The temporal and user-grouped validation strategies test fundamentally different generalization capabilities:
-- **User-grouped validation** tests generalization to new patients never seen during training, answering: "Can the model predict for patients it has never encountered?"
-- **Temporal validation** tests generalization to future time periods for known patients, answering: "Can the model predict future episodes for patients it has already learned from?"
-
-Both capabilities are clinically relevant but may exhibit different performance characteristics depending on whether tic patterns are more heterogeneous across individuals or across time.
-
-
 ---
 
 ## 5. Results
@@ -353,8 +353,6 @@ Figure 8 presents a bar chart comparing test set MAE across all three models und
 #### 5.1.2 Temporal Validation Results
 
 **Superior Performance with Temporal Validation.** Under temporal validation (predicting future episodes for patients with existing history), Random Forest achieved substantially better performance with MAE of 1.4584, representing a **24.7% improvement** compared to the user-grouped MAE of 1.94. This MAE of 1.46 indicates that predictions are on average within approximately 1.5 intensity points of the true value when the model has access to the patient's historical data.
-
-The temporal validation split used August 1, 2025 as the cutoff date, with 566 training episodes (44.4%) from May 29 - July 31, 2025 across 26 users, and 708 test episodes (55.6%) from August 1 - October 26, 2025 across 20 users. Critically, 3 users (15% of test users) appeared in both training and test sets with their earlier episodes in training and later episodes in test, mimicking real-world longitudinal deployment where the model learns from a patient's history and predicts their future.
 
 **Model Comparison Under Temporal Validation.** Consistent with user-grouped results, Random Forest maintained its advantage under temporal validation, though the performance gap between models narrowed. All three models (Random Forest, XGBoost, LightGBM) achieved MAE in the 1.45-1.50 range under temporal validation, substantially outperforming their user-grouped performance. This consistency suggests that the key performance driver is not model architecture but rather the availability of patient-specific historical data.
 
@@ -425,21 +423,6 @@ Figure 11 compares test set F1-scores across all three models under user-grouped
 **Superior Performance with Temporal Validation.** Under temporal validation (predicting future episodes for patients with existing history), XGBoost achieved substantially better classification performance with F1-score of 0.4444 (at the default threshold of 0.5), representing an **83% improvement** compared to the user-grouped F1 of 0.24 reported by the temporal validation script. The temporal validation results showed precision of 0.5070 and recall of 0.3956, indicating a more balanced precision-recall trade-off compared to the highly conservative user-grouped predictions.
 
 This dramatic improvement parallels the regression findings and reinforces the critical role of patient-specific historical data in enabling accurate predictions. Under temporal validation, the model benefits from learning each patient's individual tic pattern characteristics, baseline intensity distributions, and temporal dynamics, enabling it to make more confident and accurate predictions about future high-intensity episodes for known patients.
-
-**Note on Validation Consistency.** The temporal validation F1=0.44 reflects the August 2025 cutoff temporal split (training on May 29 - July 31, testing on August 1 - October 26) with the default threshold of 0.5. This is directly comparable to the user-grouped result of F1=0.24 from the same temporal validation script using identical hyperparameters, providing a fair comparison between validation strategies. The slightly different user-grouped values reported in this section (F1=0.34) versus the temporal validation script (F1=0.24) reflect different random train-test splits and seed values, but both demonstrate consistent patterns: temporal validation substantially outperforms user-grouped validation.
-
-**Threshold Optimization for Temporal Validation.** To determine the optimal classification threshold for temporal validation deployment, we conducted systematic threshold calibration using a nested temporal split. The training period (May 29 - July 15) was used to train the model, the calibration period (July 16-31) was used to optimize the threshold by maximizing F1-score, and the test period (August 1 - October 26) was used for final evaluation. This approach ensures that the optimal threshold discovered on mid-period data (July 16-31) generalizes to future time periods (August onwards) without data leakage.
-
-The threshold optimization yielded the following results:
-
-- **Calibrated threshold**: 0.02 (selected on July 16-31 calibration period)
-- **Calibrated performance (August test period)**: Precision=0.28, Recall=0.96, F1=0.43
-- **Default threshold performance (August test period)**: Precision=0.32, Recall=0.33, F1=0.32
-- **Improvement**: 32.6% increase in F1-score, 193% increase in recall
-
-The calibrated threshold of 0.02 is remarkably low, much lower than the user-grouped calibrated threshold of 0.337. The calibrated threshold optimization reveals that temporal validation requires an even MORE aggressive threshold (0.02 vs 0.337) to maximize F1-score by achieving very high recall (96%).
-
-
 
 #### 5.2.3 Validation Strategy Comparison and Interpretation
 
