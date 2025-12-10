@@ -36,7 +36,7 @@
    - Temporal validation outperforms user-grouped for regression (MAE: 1.46 vs 1.94)
    - Both strategies achieve similar F1 scores after calibration (~0.43-0.44)
    - Temporal achieves higher recall (96%) but lower precision (28%)
-   - User-grouped achieves balanced precision-recall (68% / 32%)
+   - User-grouped achieves more balanced precision-recall (68% / 32%)
 
 4. **User Stratification:** Performance varies with engagement:
    - Sparse users (1-9 episodes): MAE = 2.91
