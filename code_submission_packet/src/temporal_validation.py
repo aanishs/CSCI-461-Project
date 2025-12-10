@@ -67,6 +67,51 @@ def temporal_split(df, train_pct=0.70):
     return df_train, df_test
 
 
+def temporal_split_by_date(df, split_date='2025-08-01'):
+    """
+    Split data by a specific date cutoff.
+    Train on everything before split_date, test on everything after.
+    Same users can appear in both train and test sets.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        DataFrame with 'timestamp' column
+    split_date : str
+        Date cutoff in 'YYYY-MM-DD' format (default: '2025-08-01')
+
+    Returns
+    -------
+    df_train, df_test : tuple of DataFrames
+    """
+    df_sorted = df.sort_values('timestamp').reset_index(drop=True)
+
+    # Convert split_date to timestamp, matching timezone of timestamp column
+    split_timestamp = pd.Timestamp(split_date, tz='UTC')
+
+    # Split
+    df_train = df_sorted[df_sorted['timestamp'] < split_timestamp].copy()
+    df_test = df_sorted[df_sorted['timestamp'] >= split_timestamp].copy()
+
+    print(f"\nTemporal Split by Date (cutoff: {split_date}):")
+    print(f"  Training period: {df_train['timestamp'].min().date()} to {df_train['timestamp'].max().date()}")
+    print(f"  Test period: {df_test['timestamp'].min().date()} to {df_test['timestamp'].max().date()}")
+    print(f"  Train episodes: {len(df_train)} ({len(df_train)/len(df)*100:.1f}%)")
+    print(f"  Test episodes: {len(df_test)} ({len(df_test)/len(df)*100:.1f}%)")
+    print(f"  Train users: {df_train['userId'].nunique()}")
+    print(f"  Test users: {df_test['userId'].nunique()}")
+
+    # Check overlap
+    train_users = set(df_train['userId'].unique())
+    test_users = set(df_test['userId'].unique())
+    overlap_users = train_users & test_users
+    print(f"  Overlapping users: {len(overlap_users)} ({len(overlap_users)/len(test_users)*100:.1f}% of test users)")
+    print(f"  Users only in train: {len(train_users - test_users)}")
+    print(f"  Users only in test: {len(test_users - train_users)}")
+
+    return df_train, df_test
+
+
 def compare_validation_strategies(df, feature_cols):
     """
     Compare temporal vs user-grouped validation.
@@ -117,9 +162,9 @@ def compare_validation_strategies(df, feature_cols):
         'classification_recall': clf_rec_user
     }
 
-    # STRATEGY 2: Temporal Split
-    print("\n--- Strategy 2: Temporal Split ---")
-    df_train_temp, df_test_temp = temporal_split(df_clean, train_pct=0.70)
+    # STRATEGY 2: Temporal Split (by date - August 2025 cutoff)
+    print("\n--- Strategy 2: Temporal Split (August 2025 Cutoff) ---")
+    df_train_temp, df_test_temp = temporal_split_by_date(df_clean, split_date='2025-08-01')
 
     # Remove rows with NaN in features
     df_train_temp = df_train_temp.dropna(subset=feature_cols)

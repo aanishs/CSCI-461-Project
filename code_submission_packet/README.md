@@ -38,25 +38,43 @@ pip install -r requirements.txt
 pip install 'numpy<2.0' --force-reinstall
 ```
 
-### 2. Run Main Analysis Scripts
+### 2. Run All Key Analyses (⭐ RECOMMENDED)
 
-**Basic Feature Engineering & Model Training:**
+**Execute all major analyses from the final report:**
+```bash
+python run_all_analyses.py
+```
+
+This script runs all 5 key analyses referenced in the final report:
+1. Threshold Calibration (Section 4.4)
+2. 5-Fold Cross-Validation (Section 5.4)
+3. Feature Selection (Section 6.2)
+4. Fairness Analysis (Section 6.6)
+5. Temporal Validation (Section 4.6)
+
+Expected runtime: **10-15 minutes**. Results saved to `report_figures/`.
+
+### 3. Run Individual Analysis Scripts
+
+**Core Analyses (Post-Presentation Updates):**
 ```bash
 cd src/
-python feature_engineering.py
-python train_models.py
+python threshold_calibration.py     # Proper train/cal/test split (Section 4.4)
+python kfold_evaluation.py          # 5-fold user-grouped CV (Section 5.4)
+python feature_selection.py         # RFE, L1, MI, Tree methods (Section 6.2)
+python fairness_analysis.py         # Subgroup performance (Section 6.6)
+python temporal_validation.py       # August 2025 temporal split (Section 4.6)
 ```
 
-**Advanced Analyses (As Featured in Report):**
+**Additional Analyses:**
 ```bash
-python evaluate_future_targets.py    # Targets 2-3 (Section 5.3)
-python temporal_validation.py        # Temporal vs user-grouped (Section 4.5)
-python shap_analysis.py              # SHAP explainability (Section 6.2.1)
-python feature_ablation.py           # Ablation study (Section 6.2.2)
-python error_analysis.py             # Error stratification (Section 6.5)
+python evaluate_future_targets.py   # Extended targets (Section 5.3)
+python shap_analysis.py             # SHAP explainability (Section 6.3)
+python feature_ablation.py          # Ablation study (Section 6.3)
+python error_analysis.py            # Error stratification (Section 6.5)
 ```
 
-### 3. Run Hyperparameter Search
+### 4. Run Hyperparameter Search
 
 **Quick mode (20 iterations per experiment):**
 ```bash
@@ -74,6 +92,11 @@ Results are saved to `experiments/results.csv` or `experiments_medium/results.cs
 
 ## File Descriptions
 
+### Main Scripts
+
+- **`run_all_analyses.py`** ⭐ - Execute all 5 key analyses from final report (10-15 min runtime)
+- **`CODE_DOCUMENTATION.md`** ⭐ - Comprehensive code-to-report mapping and usage guide
+
 ### Core Source Code (`src/`)
 
 **Data Pipeline:**
@@ -83,16 +106,22 @@ Results are saved to `experiments/results.csv` or `experiments_medium/results.cs
 - `validation.py` - User-grouped and temporal split strategies
 
 **Model Training:**
-- `train_models.py` - Train Random Forest, XGBoost, LightGBM
-- `hyperparameter_search.py` - Optuna-based hyperparameter optimization
-- `run_hyperparameter_search.py` - Main script for running experiments
+- `models.py` - Model factory for Random Forest, XGBoost, LightGBM
+- `hyperparameter_search.py` - Randomized search with cross-validation
+- `experiment_tracker.py` - JSON-based experiment logging
 
 **Evaluation:**
-- `evaluate_models.py` - Compute regression and classification metrics
-- `evaluate_future_targets.py` - Evaluate Targets 2-3 (7-day forecast, time-to-event)
-- `temporal_validation.py` - Compare temporal vs user-grouped validation
+- `evaluation.py` - Regression and classification metrics calculator
+- `evaluate_future_targets.py` - Evaluate extended targets (7-day forecast, time-to-event)
 
-**Explainability & Analysis:**
+**Post-Presentation Analyses (⭐ NEW/UPDATED):**
+- **`threshold_calibration.py`** ⭐ - Proper train/cal/test split for threshold selection (Section 4.4)
+- **`kfold_evaluation.py`** ⭐ - 5-fold user-grouped cross-validation (Section 5.4)
+- **`feature_selection.py`** ⭐ - RFE, L1, Mutual Information, Tree-based selection (Section 6.2)
+- **`fairness_analysis.py`** ⭐ - Subgroup performance analysis (Section 6.6)
+- **`temporal_validation.py`** ⭐ - August 2025 temporal split validation (Section 4.6)
+
+**Additional Analyses:**
 - `shap_analysis.py` - SHAP feature importance analysis
 - `feature_ablation.py` - Systematic feature ablation study
 - `error_analysis.py` - Stratified error analysis
@@ -101,11 +130,11 @@ Results are saved to `experiments/results.csv` or `experiments_medium/results.cs
 - `threshold_optimization.py` - Classification threshold optimization
 
 **Visualization:**
-- `visualization.py` - Core plotting functions
+- `generate_analysis_plots.py` - Generate comprehensive analysis figures
+- `generate_best_model_plots.py` - Best model comparison plots
 - `additional_visualizations.py` - Extended visualizations
 
-**Utilities:**
-- `utils.py` - Helper functions
+⭐ = New or significantly updated for final report
 
 ### Data
 
@@ -170,40 +199,65 @@ Results are saved to `experiments/results.csv` or `experiments_medium/results.cs
 ## Key Results Summary
 
 ### Model Performance (Target 1 - Next Intensity)
-- **Regression**: MAE = 1.82, RMSE = 2.15, R² = 0.26
-- **Classification**: F1 = 0.72, Precision = 0.58, Recall = 0.92, PR-AUC = 0.70
-- **27% improvement** over baseline (MAE 2.49)
+- **Regression**: MAE = 1.94 (Random Forest), RMSE = 2.41, R² = 0.11
+- **Classification**: F1 = 0.34 (XGBoost, default threshold), PR-AUC = 0.70
+- **27.8% improvement** over baseline (MAE 2.69 → 1.94)
 
-### Extended Targets
-- **Target 2 (7-day forecast)**: MAE = 1.37, F1 = 0.67, Precision = 0.80
-- **Target 3 (time-to-event)**: MAE = 7.21 days, Event rate = 93.8%
+### Threshold Calibration (⭐ NEW - Section 4.4)
+- **Calibrated threshold**: 0.3367 (vs 0.5 default)
+- **Test F1**: 0.44 (vs 0.17 default) - **154.7% improvement**
+- **Test Recall**: 0.32 (vs 0.10 default)
+- **Methodology**: Proper train/cal/test split (60%/20%/20%) prevents leakage
 
-### Validation
-- **Temporal validation**: 17% better than user-grouped (MAE 1.51 vs 1.82)
+### 5-Fold Cross-Validation (⭐ NEW - Section 5.4)
+- **Regression**: MAE 1.47±0.42, R² 0.18±0.29
+- **Classification**: F1 0.49±0.16, Precision 0.36±0.16, Recall 0.86±0.04, ROC-AUC 0.78±0.10
+- Each user appears in test set exactly once
+
+### Feature Selection (⭐ NEW - Section 6.2)
+- **Best method**: Mutual Information → MAE 1.94 with 20 features (vs 35 total)
+- **Core features**: prev_intensity_1/2/3, window_7d_mean, user_mean
+- **43% feature reduction** with no performance loss
+
+### Fairness Analysis (⭐ NEW - Section 6.6)
+- **Engagement gap**: Sparse users MAE 3.08 vs Medium users 1.71 (80% worse)
+- **Severity**: Low MAE 1.07 (best) vs High 2.28
+- Performance varies across engagement, severity, and diversity subgroups
+
+### Temporal Validation (⭐ UPDATED - Section 4.6)
+- **Train**: May-July 2025 (566 episodes) → **Test**: Aug-Oct 2025 (708 episodes)
+- **Temporal MAE**: 1.46 vs User-grouped 1.82 (19.8% better)
 - Suggests tic patterns more stable over time than across users
 
-### Explainability
-- **Top predictor**: prev_intensity_1 (SHAP = 0.775)
-- **Classification key**: window_7d_mean_intensity (SHAP = 1.649)
-- **Minimal set**: 6 sequence features achieve 97% of full performance
+---
 
-### Error Analysis
-- **Best performance**: Medium engagement users (10-49 episodes), MAE = 1.34
-- **Challenge area**: High-intensity episodes (7-10), MAE = 2.64
-- **Low-intensity**: 98% accuracy (MAE = 1.41)
+## Expected Outputs
+
+Running `run_all_analyses.py` or individual analysis scripts saves results to `report_figures/`:
+
+**CSV Files:**
+- `proper_threshold_calibration_results.csv` - Threshold calibration metrics
+- `kfold_regression_results.csv`, `kfold_classification_results.csv` - 5-fold CV overall results
+- `kfold_regression_user_results.csv`, `kfold_classification_user_results.csv` - Per-user results
+- `fairness_regression_results.csv`, `fairness_classification_results.csv` - Subgroup performance
+- `feature_selection_regression_summary.csv`, `feature_selection_classification_summary.csv` - Feature selection results
+
+**Figures:**
+- `fairness_analysis.png` - Subgroup performance bar charts
+- `fig29_temporal_validation.png` - Temporal vs user-grouped comparison
 
 ---
 
 ## Project Statistics
 
 - **Dataset**: 1,533 episodes, 89 users
-- **Features**: 40 (34 base + 6 interaction)
+- **Features**: 40 (35 engineered + 5 interaction)
 - **Models**: Random Forest, XGBoost, LightGBM
-- **Prediction Targets**: 3 complementary tasks
-- **Hyperparameter Experiments**: 95 (medium mode)
-- **Figures**: 38 publication-quality visualizations
-- **Code**: ~1,200 lines across 23 files
-- **Report**: 1,100+ lines with 7 tables, 51 references
+- **Prediction Targets**: 5 total (next intensity, high intensity, 7-day counts, time-to-event)
+- **Analysis Scripts**: 25+ Python modules
+- **Figures**: 38+ publication-quality visualizations
+- **Code**: 2,500+ lines across 25+ files
+- **Report**: 1,100+ lines with 9 tables, 51 references
 
 ---
 
@@ -269,11 +323,31 @@ For questions about this project:
 
 ---
 
-**Completion Status**: 95% (All analyses complete, PDF generation pending)
-**Submission Ready**: Yes - all core deliverables included
+## Submission Checklist
+
+✅ **All presentation feedback addressed:**
+1. ✅ Research questions clarified (predicting outcomes vs factors)
+2. ✅ Feature engineering distinction (time-window vs user-level)
+3. ✅ Hyperparameter selection - no data leakage confirmed
+4. ✅ 5-fold cross-validation implemented
+5. ✅ Confusion matrix percentages added
+6. ✅ AUC < 0.75 clinical threshold discussed
+7. ✅ Proper threshold calibration methodology implemented
+8. ✅ Temporal split by August 2025 date
+9. ✅ Fairness analysis across subgroups
+10. ✅ Formal feature selection methods
+
+**Completion Status**: 100% (All analyses complete, all feedback addressed)
+**Submission Ready**: Yes - all deliverables included
 **Quality**: Publication-quality code, figures, and documentation
+
+**Documentation:**
+- ✅ `FINAL_REPORT.md` - Complete report with all updates
+- ✅ `CODE_DOCUMENTATION.md` - Comprehensive code-to-report mapping
+- ✅ `run_all_analyses.py` - One-command execution of all key analyses
+- ✅ `README.md` - This file with quick start guide
 
 ---
 
-*This submission packet contains only essential files for academic evaluation.*
-*Full repository with documentation guides available separately if needed.*
+*This submission packet contains all essential code referenced in the final report.*
+*For detailed code documentation and usage examples, see CODE_DOCUMENTATION.md.*

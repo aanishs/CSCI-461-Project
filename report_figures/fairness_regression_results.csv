@@ -1,0 +1,9 @@
+subgroup_type,group,mae,n_episodes,n_users
+engagement,medium,1.7120300564860662,85,4
+engagement,sparse,3.0779034416838003,20,4
+engagement,high,1.991113703297104,104,1
+severity,high_severity,2.281828724164035,141,6
+severity,medium_severity,2.5655789195346688,13,1
+severity,low_severity,1.0739285948511066,55,2
+diversity,many_types,1.9039439056221708,199,7
+diversity,few_types,3.5271611559078493,10,2
