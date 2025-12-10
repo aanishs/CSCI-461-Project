@@ -725,59 +725,8 @@ To complement standard feature importance metrics with instance-level explanatio
 | 9 | window_7d_mean_hour | 0.043 | month | 0.160 |
 | 10 | prev_type_1_encoded | 0.041 | intensity_trend | 0.159 |
 
-#### 6.2.2 Systematic Feature Ablation Study
 
-To quantify the contribution of each feature category and identify minimal feature sets capable of maintaining performance, we conducted a systematic ablation study testing seven feature configurations ranging from single categories to the complete 40-feature set [44].
-
-**Methodology.** For each configuration, we trained Random Forest (regression) and XGBoost (classification) models using only the specified feature subset, evaluated on the same test set, and compared MAE and F1-score to the full model baseline. The seven configurations tested were:
-1. **temporal_only** (9 features): hour, day_of_week, is_weekend, month, timeOfDay_encoded, etc.
-2. **sequence_only** (6 features): prev_intensity_1/2/3, time_since_prev_hours, prev_type, prev_timeOfDay
-3. **window_only** (9 features): All window_7d statistics (mean, std, count, min, max, quartiles)
-4. **user_only** (5 features): user_mean, user_std, user_median, user_count, user_high_intensity_rate
-5. **categorical_only** (5 features): type_encoded, mood_encoded, trigger_encoded, has_mood, has_trigger
-6. **no_engineered** (31 features): All features except the 6 interaction features and 3 engineered volatility features
-7. **all_features** (40 features): Complete feature set (baseline)
-
-**Results.** Table 7 presents regression and classification performance across all configurations, with Figure 35 visualizing performance vs. feature count trade-offs.
-
-**Table 7: Feature Ablation Study Results**
-
-| Configuration | Features | Regression MAE | vs. All Features | Classification F1 | vs. All Features |
-|--------------|----------|----------------|------------------|-------------------|------------------|
-| window_only | 9 | 1.767 | **-2.8%** | 0.141 | +41.7% |
-| sequence_only | 6 | 1.771 | **-2.6%** | 0.525 | -116.4% |
-| all_features | 40 | 1.819 | 0.0% | 0.242 | 0.0% |
-| no_engineered | 31 | 1.820 | +0.0% | 0.222 | +8.3% |
-| user_only | 5 | 1.936 | +6.4% | 0.227 | +6.4% |
-| temporal_only | 9 | 2.525 | +38.8% | 0.537 | -121.5% |
-| categorical_only | 5 | 2.617 | +43.9% | 0.024 | +90.1% |
-
-![Feature Ablation Results](report_figures/fig35_feature_ablation.png)
-*Figure 35: Feature ablation study showing performance across seven configurations. Top row shows MAE (left) and F1 (right) by configuration, with all_features baseline marked. Bottom row plots performance vs. number of features, revealing diminishing returns: sequence_only achieves 97% of regression performance with only 6 features, while temporal and categorical features alone perform poorly.*
-
-**Key Ablation Findings:**
-
-1. **Sequence features are essential for regression**: sequence_only (6 features) achieves MAE 1.771, only 2.6% worse than all_features, demonstrating that **recent episode history alone captures 97% of achievable regression performance**. This validates that tic intensity follows strong Markovian patterns predictable from just the last 3 episodes.
-
-2. **Window statistics optimize regression efficiency**: window_only (9 features) achieves MAE 1.767, **2.8% better than all_features**, revealing that weekly aggregation statistics alone suffice for optimal regression. This surprising result suggests interaction and categorical features introduce noise that slightly degrades regression performance.
-
-3. **Temporal features excel at classification**: temporal_only achieves F1 0.537, **121% better than all_features** (0.242), demonstrating that time-of-day patterns strongly predict high-intensity thresholds even though they poorly predict exact intensity values. This dichotomy suggests high-intensity episodes cluster at specific times (e.g., evenings), providing classification signal absent in regression.
-
-4. **Engineered features add minimal value**: no_engineered (31 features, removing 9 interaction/volatility features) performs identically to all_features for regression (MAE 1.820 vs. 1.819) and negligibly better for classification (F1 0.222 vs. 0.242). This indicates the 6 interaction features and 3 volatility features contribute virtually no incremental predictive power despite their theoretical motivation.
-
-5. **Categorical features fail in isolation**: categorical_only (5 features) achieves worst performance (MAE 2.617, F1 0.024), confirming that tic type, mood, and trigger encoding alone provide minimal predictive signal due to high cardinality, missingness, and weak causal relationships.
-
-6. **Diminishing returns with feature count**: Performance plateaus around 15-20 features, with minimal improvement from 20 to 40 features (see bottom panels of Figure 35). This suggests simplified models using only sequence + window features (15 total) would achieve near-identical performance with reduced complexity.
-
-**Clinical Deployment Implications:**
-- **For regression**: Deploy sequence_only or window_only models (6-9 features) to minimize data requirements, feature computation, and model complexity while maintaining 97%+ performance.
-- **For classification**: Consider temporal_only models (9 features) for dramatically better performance (F1 0.537 vs. 0.242), though this contradicts regression findings and warrants further investigation into time-dependent high-intensity patterns.
-- **Feature collection priorities**: Focus data collection on sequence history (prev_intensity) and weekly statistics (window_7d aggregates); time-of-day features valuable for classification; categorical features (type, mood, trigger) offer minimal ROI.
-- **Model simplification opportunity**: The negligible contribution of engineered features suggests that complex feature engineering (interactions, volatility metrics) may be unnecessary, favoring simpler architectures that are easier to maintain and explain to users.
-
-**Ablation Study Limitations:** This analysis tests feature *categories* rather than individual features, and interactions between categories may exist (e.g., sequence features may require user baselines for proper calibration). Future work should conduct individual feature ablation (sequentially removing one feature at a time) to identify truly redundant features while accounting for complementarity effects.
-
-### 6.3 Prediction Patterns and Clinical Implications
+### 6.2 Prediction Patterns and Clinical Implications
 
 To understand how the models operate in practice and identify scenarios where predictions succeed or fail, we analyzed prediction patterns on the test set and visualized model behavior through time-series predictions.
 
