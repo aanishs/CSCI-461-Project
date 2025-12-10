@@ -290,16 +290,10 @@ The calibration procedure works as follows:
 - Apply this selected threshold to the test set for final evaluation
 
 **Empirical Results.** Using this proper calibration methodology on the XGBoost high-intensity classifier:
-- **Calibrated threshold:** 0.3367 (selected on calibration set)
+- **Calibrated threshold for User-grouped Validation:** 0.3367 (selected on calibration set)
+- **Calibrated threshold for Temporal-grouped Validation:** 0.02 (selected on calibration set)
 - **Default threshold:** 0.5 (standard baseline)
-- **Test set performance with calibrated threshold:** Precision=0.68, Recall=0.32, F1=0.44
-- **Test set performance with default threshold:** Precision=0.59, Recall=0.10, F1=0.17
-- **Improvement:** 154.7% increase in F1-score, 220% increase in recall
-
-The calibrated threshold of 0.3367 (substantially lower than 0.5) reflects the class imbalance (22% positive prevalence) and the clinical priority of maximizing recall while maintaining acceptable precision. Notably, the optimal threshold selected on the calibration set generalized successfully to the test set, validating the methodology.
-
-**Implications for Deployment.** The threshold calibration findings have critical implications for clinical deployment. Using the default threshold=0.5 would result in very low recall (10%), meaning the system would miss 90% of high-intensity episodes—an unacceptable failure rate for a clinical early warning system. The calibrated threshold (0.3367) achieves 32% recall, catching roughly one-third of high-intensity episodes while maintaining 68% precision (roughly two-thirds of alerts are true positives). Further threshold reduction could increase recall at the cost of more false alarms; the optimal trade-off depends on the relative clinical costs of missed high-intensity episodes versus unnecessary interventions.
-
+  
 ### 4.5 Cross-Validation and Model Selection
 
 Cross-validation serves two critical functions in our framework: providing reliable performance estimates during hyperparameter search and enabling comparison of different model architectures. We employ k-fold cross-validation with k=3, balancing the need for robust estimates against computational constraints [11]. The relatively small value of k is necessitated by the modest size of our dataset and the user-grouped folding requirement.
@@ -351,10 +345,10 @@ The best hyperparameters for Random Forest regression were: n_estimators=100 (tr
 
 **Comparison with XGBoost and LightGBM.** Under user-grouped validation, XGBoost achieved the second-best regression performance with test MAE of 1.9887, only 5% worse than Random Forest. XGBoost's test RMSE of 2.5630 indicates slightly higher error variance compared to Random Forest. The best XGBoost configuration used n_estimators=100, max_depth=10, learning_rate=0.1, subsample=0.8, and colsample_bytree=0.8. LightGBM performed comparably with test MAE of 1.9919 and RMSE of 2.5665. The near-parity between XGBoost and LightGBM (both achieving MAE ≈1.99) suggests that both gradient boosting implementations converge to similar solutions for this regression problem.
 
-Figure 9 presents a bar chart comparing test set MAE across all three models under user-grouped validation, clearly showing Random Forest's advantage.
+Figure 8 presents a bar chart comparing test set MAE across all three models under user-grouped validation, clearly showing Random Forest's advantage.
 
 ![Model Comparison - Regression MAE (User-Grouped)](report_figures/fig5_model_comparison_mae.png)
-*Figure 9: Test set Mean Absolute Error comparison for regression task under user-grouped validation (predicting next episode intensity for entirely new users). Random Forest achieves the lowest MAE of 1.94, outperforming XGBoost (1.99) and LightGBM (1.99). Error bars represent 95% confidence intervals from 3-fold cross-validation. Lower MAE indicates better performance.*
+*Figure 8: Test set Mean Absolute Error comparison for regression task under user-grouped validation (predicting next episode intensity for entirely new users). Random Forest achieves the lowest MAE of 1.94, outperforming XGBoost (1.99) and LightGBM (1.99). Error bars represent 95% confidence intervals from 3-fold cross-validation. Lower MAE indicates better performance.*
 
 #### 5.1.2 Temporal Validation Results
 
@@ -368,10 +362,10 @@ The temporal validation split used August 1, 2025 as the cutoff date, with 566 t
 
 **Temporal vs. User-Grouped Performance.** The 24.7% performance improvement from user-grouped (MAE=1.94) to temporal validation (MAE=1.46) reveals a critical finding: **tic intensity patterns exhibit greater temporal stability within individuals than consistency across individuals**. In other words, an individual's future episodes are substantially more predictable from their own history (temporal MAE=1.46) than a new patient's episodes are from other patients' patterns (user-grouped MAE=1.94).
 
-Figure 8 (from Section 4.6) presents a side-by-side comparison of model performance under both validation strategies, clearly visualizing the substantial performance advantage of temporal over user-grouped validation across both regression and classification tasks.
+Figure 9 (from Section 4.6) presents a side-by-side comparison of model performance under both validation strategies, clearly visualizing the substantial performance advantage of temporal over user-grouped validation across both regression and classification tasks.
 
 ![Temporal vs User-Grouped Validation](report_figures/fig29_temporal_validation.png)
-*Figure 8: Comparison of model performance under temporal validation (predicting future episodes for known users) versus user-grouped validation (predicting for entirely new users). Temporal validation shows substantially better performance with 24.7% lower MAE for regression. Error bars represent 95% bootstrap confidence intervals. This finding suggests that tic patterns are more stable within individuals over time than across different individuals.*
+*Figure 9: Comparison of model performance under temporal validation (predicting future episodes for known users) versus user-grouped validation (predicting for entirely new users). Temporal validation shows substantially better performance with 24.7% lower MAE for regression. Error bars represent 95% bootstrap confidence intervals. This finding suggests that tic patterns are more stable within individuals over time than across different individuals.*
 
 **Clinical Implications.** The validation strategy comparison has important implications for clinical deployment:
 
@@ -443,20 +437,17 @@ The threshold optimization yielded the following results:
 - **Default threshold performance (August test period)**: Precision=0.32, Recall=0.33, F1=0.32
 - **Improvement**: 32.6% increase in F1-score, 193% increase in recall
 
-The calibrated threshold of 0.02 is remarkably low, much lower than the user-grouped calibrated threshold of 0.337. This finding is striking: we hypothesized that temporal validation would require less aggressive threshold tuning because patient-specific historical data should produce better-calibrated probability estimates. However, the calibrated threshold optimization reveals that temporal validation requires an even MORE aggressive threshold (0.02 vs 0.337) to maximize F1-score by achieving very high recall (96%).
+The calibrated threshold of 0.02 is remarkably low, much lower than the user-grouped calibrated threshold of 0.337. The calibrated threshold optimization reveals that temporal validation requires an even MORE aggressive threshold (0.02 vs 0.337) to maximize F1-score by achieving very high recall (96%).
 
-**Interpretation of Temporal Threshold Findings.** The extremely low optimal threshold (0.02) for temporal validation suggests that the model's predicted probabilities, even with patient-specific historical data, remain conservative. The model is reluctant to assign high probabilities (>0.5) to high-intensity predictions, meaning that lowering the threshold dramatically increases sensitivity without excessive false alarm costs. The calibrated temporal threshold achieves **96% recall**, meaning it catches nearly all high-intensity episodes in the test period, at the cost of lower precision (28%, meaning ~72% of alerts are false positives).
 
-Comparing the default threshold performance between validation strategies reveals an interesting pattern:
+
+#### 5.2.3 Validation Strategy Comparison and Interpretation
+
+**Temporal vs. User-Grouped Performance.** Comparing the default threshold performance between validation strategies reveals an interesting pattern:
 - **User-grouped (threshold=0.5)**: Precision=0.66, Recall=0.23, F1=0.34 — Model is very conservative
 - **Temporal (threshold=0.5)**: Precision=0.32, Recall=0.33, F1=0.32 — Model is more balanced but lower overall performance
 
 The default threshold temporal performance (F1=0.32) is actually slightly worse than user-grouped (F1=0.34) at the same threshold, despite temporal validation having access to patient history. This counterintuitive finding suggests that the model's probability calibration may be affected by the temporal split characteristics (e.g., class imbalance differences between training and test periods). However, with proper threshold optimization, temporal validation achieves superior F1=0.43 compared to user-grouped F1=0.34.
-
-#### 5.2.3 Validation Strategy Comparison and Interpretation
-
-**Temporal vs. User-Grouped Performance.** The 83% performance improvement from user-grouped (F1=0.24) to temporal validation (F1=0.44) for classification parallels the regression findings, demonstrating that **high-intensity episode prediction is substantially more accurate when the model has access to patient-specific historical data**. This improvement is even more pronounced than the regression improvement (24.7%), suggesting that classification of discrete high-intensity events benefits particularly strongly from personalized baselines and within-person pattern recognition.
-
 As shown in Figure 8 (from Section 4.6), temporal validation achieves superior performance across both regression (24.7% lower MAE) and classification (83% higher F1) tasks, with the classification improvement being especially dramatic.
 
 **Precision-Recall Tradeoffs Across Validation Strategies.** A comprehensive comparison of precision-recall characteristics across both validation strategies and threshold configurations reveals distinct operating points optimized for different deployment scenarios:
@@ -529,7 +520,7 @@ Table 2 presents complete regression results across all models and metrics under
 
 | Model | Train MAE | Train RMSE | **User-Grouped Test MAE** | **User-Grouped Test RMSE** | **Temporal Test MAE** | Temporal Improvement | Training Time (s) |
 |-------|-----------|------------|----------|----------|-----------|---------|---------|---------|-------------------|
-| **Random Forest** | **1.8965** | 2.4632 | 0.0923 | **1.9377** | **2.5122** | **0.0809** | **1.4584** | **24.7%** | 0.0487 |
+| **Random Forest** | **1.8965** | 2.4632 | **1.9377** | **2.5122** | **0.0809** | **1.4584** | **24.7%** | 0.0487 |
 | XGBoost | 1.9234 | 2.4889 | 1.9887 | 2.5630  ~1.50 | ~24% | 0.0794 |
 | LightGBM | 1.9187 | 2.4821 | 1.9919 | 2.5665 | ~1.50 | ~25% | 0.0512 |
 | *Baseline (Global Mean)* | - | - | 2.685 | 3.214 | 2.685 | 0% | - |
