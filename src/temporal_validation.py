@@ -12,6 +12,7 @@ import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBClassifier
 from sklearn.metrics import mean_absolute_error, f1_score, precision_score, recall_score
+from sklearn.utils import resample
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -199,32 +200,78 @@ def compare_validation_strategies(df, feature_cols):
         'classification_recall': clf_rec_temp
     }
 
+    # Calculate bootstrap confidence intervals
+    def bootstrap_ci(y_true, y_pred, metric_func, n_bootstrap=1000, ci=0.95):
+        """Calculate bootstrap confidence interval for a metric."""
+        bootstrap_scores = []
+        n_samples = len(y_true)
+
+        for _ in range(n_bootstrap):
+            # Resample with replacement
+            indices = resample(range(n_samples), n_samples=n_samples, replace=True)
+            y_true_boot = [y_true.iloc[i] if hasattr(y_true, 'iloc') else y_true[i] for i in indices]
+            y_pred_boot = [y_pred[i] for i in indices]
+
+            # Calculate metric
+            score = metric_func(y_true_boot, y_pred_boot)
+            bootstrap_scores.append(score)
+
+        # Calculate confidence interval
+        alpha = 1 - ci
+        lower = np.percentile(bootstrap_scores, (alpha/2) * 100)
+        upper = np.percentile(bootstrap_scores, (1 - alpha/2) * 100)
+        return upper - lower  # Return the total interval width
+
+    # Calculate bootstrap CIs for regression
+    reg_user_ci = bootstrap_ci(y_reg_test, rf_reg.predict(X_test), mean_absolute_error)
+    reg_temp_ci = bootstrap_ci(y_reg_test_temp, rf_reg_temp.predict(X_test_temp), mean_absolute_error)
+
+    # Calculate bootstrap CIs for classification
+    clf_f1_user_ci = bootstrap_ci(y_clf_test, xgb_clf.predict(X_test), f1_score)
+    clf_f1_temp_ci = bootstrap_ci(y_clf_test_temp, xgb_clf_temp.predict(X_test_temp), f1_score)
+    clf_prec_user_ci = bootstrap_ci(y_clf_test, xgb_clf.predict(X_test),
+                                     lambda y_t, y_p: precision_score(y_t, y_p, zero_division=0))
+    clf_prec_temp_ci = bootstrap_ci(y_clf_test_temp, xgb_clf_temp.predict(X_test_temp),
+                                     lambda y_t, y_p: precision_score(y_t, y_p, zero_division=0))
+    clf_rec_user_ci = bootstrap_ci(y_clf_test, xgb_clf.predict(X_test),
+                                    lambda y_t, y_p: recall_score(y_t, y_p, zero_division=0))
+    clf_rec_temp_ci = bootstrap_ci(y_clf_test_temp, xgb_clf_temp.predict(X_test_temp),
+                                    lambda y_t, y_p: recall_score(y_t, y_p, zero_division=0))
+
     # Visualize comparison
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
-    # Plot 1: MAE comparison
+    # Plot 1: MAE comparison with bootstrap error bars
     strategies = ['User-Grouped', 'Temporal']
     mae_values = [reg_mae_user, reg_mae_temp]
+    mae_errors = [reg_user_ci / 2, reg_temp_ci / 2]  # Half interval for +/- error bars
 
-    axes[0].bar(strategies, mae_values, color=['#1f77b4', '#ff7f0e'], edgecolor='black')
+    axes[0].bar(strategies, mae_values, yerr=mae_errors, capsize=8,
+                color=['#1f77b4', '#ff7f0e'], edgecolor='black',
+                error_kw={'linewidth': 2, 'ecolor': 'black'})
     axes[0].set_ylabel('Mean Absolute Error', fontsize=11, fontweight='bold')
     axes[0].set_title('Regression Performance by Validation Strategy', fontsize=12, fontweight='bold')
     axes[0].grid(True, alpha=0.3, axis='y')
-    for i, v in enumerate(mae_values):
-        axes[0].text(i, v + 0.02, f'{v:.3f}', ha='center', va='bottom', fontsize=12, fontweight='bold')
+    for i, (v, err) in enumerate(zip(mae_values, mae_errors)):
+        axes[0].text(i, v + err + 0.02, f'{v:.3f}', ha='center', va='bottom',
+                     fontsize=12, fontweight='bold')
 
-    # Plot 2: F1 comparison
+    # Plot 2: F1 comparison with bootstrap error bars
     metrics = ['F1-Score', 'Precision', 'Recall']
     user_grouped_vals = [clf_f1_user, clf_prec_user, clf_rec_user]
     temporal_vals = [clf_f1_temp, clf_prec_temp, clf_rec_temp]
+    user_grouped_errors = [clf_f1_user_ci / 2, clf_prec_user_ci / 2, clf_rec_user_ci / 2]
+    temporal_errors = [clf_f1_temp_ci / 2, clf_prec_temp_ci / 2, clf_rec_temp_ci / 2]
 
     x = np.arange(len(metrics))
     width = 0.35
 
-    axes[1].bar(x - width/2, user_grouped_vals, width, label='User-Grouped',
-                color='#1f77b4', edgecolor='black')
-    axes[1].bar(x + width/2, temporal_vals, width, label='Temporal',
-                color='#ff7f0e', edgecolor='black')
+    axes[1].bar(x - width/2, user_grouped_vals, width, yerr=user_grouped_errors,
+                capsize=5, label='User-Grouped', color='#1f77b4', edgecolor='black',
+                error_kw={'linewidth': 1.5, 'ecolor': 'black'})
+    axes[1].bar(x + width/2, temporal_vals, width, yerr=temporal_errors,
+                capsize=5, label='Temporal', color='#ff7f0e', edgecolor='black',
+                error_kw={'linewidth': 1.5, 'ecolor': 'black'})
     axes[1].set_ylabel('Score', fontsize=11, fontweight='bold')
     axes[1].set_title('Classification Performance by Validation Strategy', fontsize=12, fontweight='bold')
     axes[1].set_xticks(x)
@@ -234,7 +281,7 @@ def compare_validation_strategies(df, feature_cols):
 
     plt.tight_layout()
     plt.savefig('report_figures/fig29_temporal_validation.png', dpi=300, bbox_inches='tight')
-    print("\nSaved: report_figures/fig29_temporal_validation.png")
+    print("\nSaved: report_figures/fig29_temporal_validation.png (with bootstrap error bars)")
     plt.close()
 
     return results
