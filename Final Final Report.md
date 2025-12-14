@@ -97,7 +97,6 @@ Table 1 summarizes the feature categories with example features from each group.
 
 See Appendix C for details on feature value distributions. See Appendix D for more detail regarding engineered features and feature correlation.
 
-
 ### 3.2 Target Variable Generation
 
 For the regression task (RQ1), the target variable is the intensity value of the next chronological episode for each user. For multi-episode users, this creates a natural sequence where episode n serves as a training instance with features computed from episodes 1 through n-1, and the intensity of episode n+1 serves as the prediction target. 
